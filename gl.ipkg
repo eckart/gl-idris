@@ -1,0 +1,10 @@
+package gl
+
+sourcedir = src
+modules = Graphics.Rendering.Gl, Graphics.Rendering.Config, Graphics.Util.Glfw
+opts = "-p effects" 
+
+makefile = MakefileGl
+
+objs = gl_idris.o, gl_idris.h
+
