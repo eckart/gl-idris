@@ -5,6 +5,8 @@ import Graphics.Rendering.Gl
 
 main : IO ()
 main = do win <- createWindow "Hello World" 640 480 
+          setInputMode win GLFW_STICKY_KEYS 1
+          swapInterval 0
           clearColor 0 0 0 1
           clear GL_COLOR_BUFFER_BIT
           swapBuffers win
@@ -12,11 +14,12 @@ main = do win <- createWindow "Hello World" 640 480
           terminate win
           pure ()
        where 
-          eventLoop : Window -> IO ()
+          eventLoop : GlfwWindow -> IO ()
           eventLoop win = do
-                      waitEvents
+                      pollEvents
+                      key <- getKey win GLFW_KEY_ESCAPE
                       shouldClose <- windowShouldClose win
-                      if shouldClose 
+                      if shouldClose || key == GLFW_PRESS
                       then pure ()
                       else eventLoop win
 
