@@ -3,6 +3,21 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+int idr_sizeof_doubles(int len) {
+  return len * sizeof(double);
+}
+
+void* idr_allocate_doubles(int len) {
+  double* buf = malloc(len*sizeof(double));
+  return (void*) buf;
+}
+
+void idr_set_double(void* buf, int idx, double val) {
+  double* buffer = (double*) buf;
+  buffer[idx] = val;
+}
+
+
 void* idr_glfw_create_window(char* title, int width, int height) {
 
   if (!glfwInit ()) {
@@ -39,4 +54,16 @@ void* idr_glfw_create_window(char* title, int width, int height) {
   glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
   
   return window;
+}
+
+int idr_glGenVertexArrays() {
+  GLuint id;
+  glGenVertexArrays(1, &id);
+  return id;
+}
+
+int idr_glGenBuffers() {
+  GLuint id;
+  glGenBuffers(1, &id);
+  return id;
 }

@@ -3,6 +3,12 @@ module Main
 import Graphics.Util.Glfw
 import Graphics.Rendering.Gl
 
+
+triangle : List Vertex3
+triangle = [ (-0.6, -0.6, 1.0),		-- Bottom-left vertex
+             (0.0,  0.6, 1.0 ),		-- Top vertex
+             (0.6, -0.6, 1.0 )]         -- Bottom-right vertex
+
 main : IO ()
 main = do win <- createWindow "Hello World" 640 480 
           setInputMode win GLFW_STICKY_KEYS 1
