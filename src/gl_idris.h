@@ -11,6 +11,8 @@ int idr_glGenBuffers();
 
 int idr_sizeof_doubles(int len);
 void* idr_allocate_doubles(int len);
-void idr_set_double(void* buf, int idx, double val) {
+void idr_set_double(void* buf, int idx, double val);
+
+void idr_glShaderSource(int id, void* source);
   
 #endif

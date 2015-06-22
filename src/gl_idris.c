@@ -67,3 +67,8 @@ int idr_glGenBuffers() {
   glGenBuffers(1, &id);
   return id;
 }
+
+void idr_glShaderSource(int id, void* source) {
+  const GLchar* s = (GLchar*) source;
+  glShaderSource(id, 1, &s, NULL);		    
+}

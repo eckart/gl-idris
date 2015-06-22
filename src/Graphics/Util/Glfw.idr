@@ -2,8 +2,8 @@ module Graphics.Util.Glfw
 
 import Graphics.Rendering.Config
 
-%include C "gl_idris.h"
 %include C "GLFW/glfw3.h"
+%include C "gl_idris.h"
 %link C "gl_idris.o"
 
 %access private
