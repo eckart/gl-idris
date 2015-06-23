@@ -70,7 +70,7 @@ public
 clear : GLbitfields -> IO ()
 clear mask = foreign FFI_C "glClear" (Int -> IO()) (toGlInt mask)
 
-
+public
 data GlError
   = GL_NO_ERROR
   | GL_INVALID_ENUM
@@ -99,12 +99,23 @@ instance GlConstant GlError Int where
   fromGlInt 0x0505 = GL_STACK_OVERFLOW
   fromGlInt 0x0506 = GL_INVALID_FRAMEBUFFER_OPERATION
 
+instance Show GlError where
+  show GL_NO_ERROR                      = "GL_NO_ERROR "
+  show GL_INVALID_ENUM                  = "GL_INVALID_ENUM"
+  show GL_INVALID_VALUE                 = "GL_INVALID_VALUE"
+  show GL_INVALID_OPERATION             = "GL_INVALID_OPERATION"
+  show GL_OUT_OF_MEMORY                 = "GL_OUT_OF_MEMORY"
+  show GL_STACK_UNDERFLOW               = "GL_STACK_UNDERFLOW"
+  show GL_STACK_OVERFLOW                = "GL_STACK_OVERFLOW"
+  show GL_INVALID_FRAMEBUFFER_OPERATION = "GL_INVALID_FRAMEBUFFER_OPERATION"
+
 public
 getError : IO GlError
 getError = do err <- foreign FFI_C "glGetError" (IO Int) 
               pure $ fromGlInt err
 
 ||| A Vertex Array Object id
+abstract
 data Vao = MkVao Int
 
 ||| generate a vertex array object name
@@ -119,6 +130,7 @@ bindVertexArray : Vao -> IO ()
 bindVertexArray (MkVao id) = foreign FFI_C "glBindVertexArray" (Int -> IO ()) id
 
 ||| A Vertex Buffer
+abstract
 data Buffer = MkBuffer Int
 
 ||| generate a vertex array object name
@@ -127,6 +139,7 @@ genBuffers : IO Buffer
 genBuffers = do id <- foreign FFI_C "idr_glGenBuffers" (IO Int) 
                 pure $ MkBuffer id
 
+public
 data BufferBindingTarget 
   = GL_ARRAY_BUFFER
 
@@ -139,6 +152,7 @@ public
 bindBuffer : BufferBindingTarget -> Buffer -> IO ()
 bindBuffer target (MkBuffer id) = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) id
 
+public
 data GlUsage
   = GL_STREAM_DRAW
   | GL_STREAM_READ
@@ -168,6 +182,7 @@ instance GlConstant GlUsage Int where
   fromGlInt 0x88E8             = GL_DYNAMIC_DRAW                                
   fromGlInt 0x88E9             = GL_DYNAMIC_READ                                
 
+public
 data Vectors = Vector3 | Vector4
 
 public
@@ -231,68 +246,84 @@ vertexAttribPointer : (index: Int) -> (size: Int) -> (ty: GlType) -> (normalized
 vertexAttribPointer idx size ty normalized stride = 
   foreign FFI_C "glVertexAttribPointer" (Int -> Int -> Int -> Char -> Int -> Ptr -> IO ()) idx size (toGlInt ty) (toGlInt normalized) stride prim__null
 
-namespace Shaders
+-- -------------------------------------------------------------
+-- Shaders
+-- -------------------------------------------------------------
 
-  data ShaderType 
-    --= GL_COMPUTE_SHADER
-    = GL_VERTEX_SHADER        
-    | GL_TESS_CONTROL_SHADER    
-    | GL_TESS_EVALUATION_SHADER 
-    | GL_GEOMETRY_SHADER        
-    | GL_FRAGMENT_SHADER      
+public
+data ShaderType 
+  --= GL_COMPUTE_SHADER
+  = GL_VERTEX_SHADER        
+  | GL_TESS_CONTROL_SHADER    
+  | GL_TESS_EVALUATION_SHADER 
+  | GL_GEOMETRY_SHADER        
+  | GL_FRAGMENT_SHADER      
     
     
-  instance GlConstant ShaderType Int where 
-    --toGlInt GL_COMPUTE_SHADER           = 
-    toGlInt GL_VERTEX_SHADER          = 0x8B31
-    toGlInt GL_TESS_CONTROL_SHADER    = 0x8E88
-    toGlInt GL_TESS_EVALUATION_SHADER = 0x8E87
-    toGlInt GL_GEOMETRY_SHADER        = 0x8DD9
-    toGlInt GL_FRAGMENT_SHADER        = 0x8B30
-    --fromGlInt GL_COMPUTE_SHADER           = 
-    fromGlInt 0x8B31 = GL_VERTEX_SHADER          
-    fromGlInt 0x8E88 = GL_TESS_CONTROL_SHADER    
-    fromGlInt 0x8E87 = GL_TESS_EVALUATION_SHADER 
-    fromGlInt 0x8DD9 = GL_GEOMETRY_SHADER        
-    fromGlInt 0x8B30  = GL_FRAGMENT_SHADER        
+instance GlConstant ShaderType Int where 
+  --toGlInt GL_COMPUTE_SHADER           = 
+  toGlInt GL_VERTEX_SHADER          = 0x8B31
+  toGlInt GL_TESS_CONTROL_SHADER    = 0x8E88
+  toGlInt GL_TESS_EVALUATION_SHADER = 0x8E87
+  toGlInt GL_GEOMETRY_SHADER        = 0x8DD9
+  toGlInt GL_FRAGMENT_SHADER        = 0x8B30
+  --fromGlInt GL_COMPUTE_SHADER           = 
+  fromGlInt 0x8B31 = GL_VERTEX_SHADER          
+  fromGlInt 0x8E88 = GL_TESS_CONTROL_SHADER    
+  fromGlInt 0x8E87 = GL_TESS_EVALUATION_SHADER 
+  fromGlInt 0x8DD9 = GL_GEOMETRY_SHADER        
+  fromGlInt 0x8B30  = GL_FRAGMENT_SHADER        
+
+abstract
+data Shader = MkShader Int
     
-  data Shader = MkShader Int
-    
-  createShader : ShaderType -> IO Shader
-  createShader t = do ptr <- foreign FFI_C "glCreateShader" (Int -> IO Int) (toGlInt t)
-                      pure $ MkShader ptr
-  deleteShader : Shader -> IO ()
-  deleteShader (MkShader id) = foreign FFI_C "glDeleteShader" (Int -> IO ()) id
+public    
+createShader : ShaderType -> IO Shader
+createShader t = do ptr <- foreign FFI_C "glCreateShader" (Int -> IO Int) (toGlInt t)
+                    pure $ MkShader ptr
+public    
+deleteShader : Shader -> IO ()
+deleteShader (MkShader id) = foreign FFI_C "glDeleteShader" (Int -> IO ()) id
                       
-  shaderSource : Shader -> String -> IO ()
-  shaderSource (MkShader id) source = foreign FFI_C "idr_glShaderSource" (Int -> String -> IO ()) id source
+public    
+shaderSource : Shader -> String -> IO ()
+shaderSource (MkShader id) source = foreign FFI_C "idr_glShaderSource" (Int -> String -> IO ()) id source
 
-  compileShader : Shader -> IO ()
-  compileShader (MkShader id) = foreign FFI_C "glCompileShader" (Int -> IO ()) id
+public    
+compileShader : Shader -> IO ()
+compileShader (MkShader id) = foreign FFI_C "glCompileShader" (Int -> IO ()) id
 
-  data Program = MkProgram Int | NoProgram
+--abstract
+public
+data Program = MkProgram Int | NoProgram
   
-  createProgram : IO Program
-  createProgram = do id <- foreign FFI_C "glCreateProgram" (IO Int)
-                     pure $ MkProgram id
+public    
+createProgram : IO Program
+createProgram = do id <- foreign FFI_C "glCreateProgram" (IO Int)
+                   pure $ MkProgram id
 
-  deleteProgram : Program -> IO ()
-  deleteProgram (MkProgram id ) = foreign FFI_C "glDeleteProgram" (Int -> IO()) id
+public    
+deleteProgram : Program -> IO ()
+deleteProgram (MkProgram id ) = foreign FFI_C "glDeleteProgram" (Int -> IO()) id
 
-  linkProgram : Program -> IO ()
-  linkProgram (MkProgram id ) = foreign FFI_C "glLinkProgram" (Int -> IO()) id
+public    
+linkProgram : Program -> IO ()
+linkProgram (MkProgram id ) = foreign FFI_C "glLinkProgram" (Int -> IO()) id
                      
-  attachShader : Program -> Shader -> IO ()
-  attachShader (MkProgram programId) (MkShader shaderId) = 
-    foreign FFI_C "glAttachShader" (Int -> Int -> IO()) programId shaderId                   
+public    
+attachShader : Program -> Shader -> IO ()
+attachShader (MkProgram programId) (MkShader shaderId) = 
+  foreign FFI_C "glAttachShader" (Int -> Int -> IO()) programId shaderId                   
 
-  detachShader : Program -> Shader -> IO ()
-  detachShader (MkProgram programId) (MkShader shaderId) = 
-    foreign FFI_C "glDetachShader" (Int -> Int -> IO()) programId shaderId                   
+public    
+detachShader : Program -> Shader -> IO ()
+detachShader (MkProgram programId) (MkShader shaderId) = 
+  foreign FFI_C "glDetachShader" (Int -> Int -> IO()) programId shaderId                   
 
-  useProgram : Program -> IO ()
-  useProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
-  useProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
+public    
+useProgram : Program -> IO ()
+useProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
+useProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
     
 namespace Draw
 
