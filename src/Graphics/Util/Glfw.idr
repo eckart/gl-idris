@@ -2,6 +2,7 @@ module Graphics.Util.Glfw
 
 import Graphics.Rendering.Config
 
+%include C "GL/glew.h"
 %include C "GLFW/glfw3.h"
 %include C "gl_idris.h"
 %link C "gl_idris.o"
@@ -389,6 +390,9 @@ windowShouldClose (Win ptr) = do flag <- foreign FFI_C "glfwWindowShouldClose" (
                                  let bool = if flag == 0 then False else True
                                  pure bool
 
+public 
+mainLoop : GlfwWindow -> IO ()
+mainLoop (Win ptr) = foreign FFI_C "idr_main_loop" (Ptr -> IO()) ptr
 
 {--
 GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev);

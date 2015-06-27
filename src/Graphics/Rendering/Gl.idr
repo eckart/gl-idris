@@ -1,5 +1,6 @@
 module Graphics.Rendering.Gl
 
+%include C "GL/glew.h"
 %include C "GLFW/glfw3.h"
 %include C "gl_idris.h"
 %link C "gl_idris.o"
@@ -123,11 +124,19 @@ public
 genVertexArrays : IO Vao
 genVertexArrays = do id <- foreign FFI_C "idr_glGenVertexArrays" (IO Int) 
                      pure $ MkVao id
+                     
+public 
+deleteVertexArray : Vao -> IO ()
+deleteVertexArray (MkVao id) = foreign FFI_C "idr_glDeleteVertexArrays" (Int -> IO()) id
 
 ||| activate the vertex array object
 public
 bindVertexArray : Vao -> IO ()
 bindVertexArray (MkVao id) = foreign FFI_C "glBindVertexArray" (Int -> IO ()) id
+
+public
+unbindVertexArray : IO ()
+unbindVertexArray = foreign FFI_C "glBindVertexArray" (Int -> IO ()) 0
 
 ||| A Vertex Buffer
 abstract
@@ -151,6 +160,11 @@ instance GlConstant BufferBindingTarget Int where
 public
 bindBuffer : BufferBindingTarget -> Buffer -> IO ()
 bindBuffer target (MkBuffer id) = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) id
+
+||| activate the vertex buffer
+public
+unbindBuffer : BufferBindingTarget -> IO ()
+unbindBuffer target = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) 0
 
 public
 data GlUsage
@@ -193,6 +207,11 @@ bufferData target xs usage =
      size <- foreign FFI_C "idr_sizeof_doubles" (Int -> IO Int) (toIntNat (length xs))
      foreign FFI_C "glBufferData" (Int -> Int -> Ptr -> Int -> IO ()) (toGlInt target) size ptr (toGlInt usage)
      free ptr 
+     
+public
+deleteBuffer : Buffer -> IO ()
+deleteBuffer (MkBuffer id) = foreign FFI_C "idr_glDeleteBuffers" (Int -> IO()) id
+
 
 ||| enables the attribute on for the given VAO
 public 
@@ -212,7 +231,7 @@ public
 disableVertexAttribArray : Int -> IO ()
 disableVertexAttribArray index = foreign FFI_C "glDisableVertexAttribArray" (Int -> IO ()) index
 
- 
+public
 data GlType 
   = GL_BYTE
   | GL_UNSIGNED_BYTE
@@ -324,49 +343,63 @@ public
 useProgram : Program -> IO ()
 useProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
 useProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
-    
-namespace Draw
 
-  data DrawingMode
-    = GL_POINTS
-    | GL_LINE_STRIP
-    | GL_LINE_LOOP
-    | GL_LINES
-    | GL_LINE_STRIP_ADJACENCY
-    | GL_LINES_ADJACENCY
-    | GL_TRIANGLE_STRIP
-    | GL_TRIANGLE_FAN
-    | GL_TRIANGLES
-    | GL_TRIANGLE_STRIP_ADJACENCY
-    | GL_TRIANGLES_ADJACENCY
-    | GL_PATCHES
+{--
+public 
+getShaderiv : 
+GLint status;
+glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
+
+Retrieving the compile log
+
+char buffer[512];
+glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
+
+--}
+-- ------------------------------------------------------------------------
+-- drawing
     
-  instance GlConstant DrawingMode Int where
-    toGlInt GL_POINTS                   = 0x0000
-    toGlInt GL_LINE_STRIP               = 0x0003
-    toGlInt GL_LINE_LOOP                = 0x0002
-    toGlInt GL_LINES                    = 0x0001
-    toGlInt GL_LINE_STRIP_ADJACENCY     = 0x000B
-    toGlInt GL_LINES_ADJACENCY          = 0x000A
-    toGlInt GL_TRIANGLE_STRIP           = 0x0005
-    toGlInt GL_TRIANGLE_FAN             = 0x0006
-    toGlInt GL_TRIANGLES                = 0x0004
-    toGlInt GL_TRIANGLE_STRIP_ADJACENCY = 0x000D
-    toGlInt GL_TRIANGLES_ADJACENCY      = 0x000C
-    toGlInt GL_PATCHES                  = 0x000E
-    fromGlInt 0x0000 = GL_POINTS
-    fromGlInt 0x0003 = GL_LINE_STRIP
-    fromGlInt 0x0002 = GL_LINE_LOOP
-    fromGlInt 0x0001 = GL_LINES
-    fromGlInt 0x000B = GL_LINE_STRIP_ADJACENCY
-    fromGlInt 0x000A = GL_LINES_ADJACENCY
-    fromGlInt 0x0005 = GL_TRIANGLE_STRIP
-    fromGlInt 0x0006 = GL_TRIANGLE_FAN
-    fromGlInt 0x0004 = GL_TRIANGLES
-    fromGlInt 0x000D = GL_TRIANGLE_STRIP_ADJACENCY
-    fromGlInt 0x000C = GL_TRIANGLES_ADJACENCY
-    fromGlInt 0x000E = GL_PATCHES
+public
+data DrawingMode
+  = GL_POINTS
+  | GL_LINE_STRIP
+  | GL_LINE_LOOP
+  | GL_LINES
+  | GL_LINE_STRIP_ADJACENCY
+  | GL_LINES_ADJACENCY
+  | GL_TRIANGLE_STRIP
+  | GL_TRIANGLE_FAN
+  | GL_TRIANGLES
+  | GL_TRIANGLE_STRIP_ADJACENCY
+  | GL_TRIANGLES_ADJACENCY
+  | GL_PATCHES
+    
+instance GlConstant DrawingMode Int where
+  toGlInt GL_POINTS                   = 0x0000
+  toGlInt GL_LINE_STRIP               = 0x0003
+  toGlInt GL_LINE_LOOP                = 0x0002
+  toGlInt GL_LINES                    = 0x0001
+  toGlInt GL_LINE_STRIP_ADJACENCY     = 0x000B
+  toGlInt GL_LINES_ADJACENCY          = 0x000A
+  toGlInt GL_TRIANGLE_STRIP           = 0x0005
+  toGlInt GL_TRIANGLE_FAN             = 0x0006
+  toGlInt GL_TRIANGLES                = 0x0004
+  toGlInt GL_TRIANGLE_STRIP_ADJACENCY = 0x000D
+  toGlInt GL_TRIANGLES_ADJACENCY      = 0x000C
+  toGlInt GL_PATCHES                  = 0x000E
+  fromGlInt 0x0000 = GL_POINTS
+  fromGlInt 0x0003 = GL_LINE_STRIP
+  fromGlInt 0x0002 = GL_LINE_LOOP
+  fromGlInt 0x0001 = GL_LINES
+  fromGlInt 0x000B = GL_LINE_STRIP_ADJACENCY
+  fromGlInt 0x000A = GL_LINES_ADJACENCY
+  fromGlInt 0x0005 = GL_TRIANGLE_STRIP
+  fromGlInt 0x0006 = GL_TRIANGLE_FAN
+  fromGlInt 0x0004 = GL_TRIANGLES
+  fromGlInt 0x000D = GL_TRIANGLE_STRIP_ADJACENCY
+  fromGlInt 0x000C = GL_TRIANGLES_ADJACENCY
+  fromGlInt 0x000E = GL_PATCHES
   
-
-  drawArrays : DrawingMode -> (first: Int) -> (count: Int) -> IO ()
-  drawArrays mode first count = foreign FFI_C "glDrawArrays" (Int -> Int -> Int -> IO ()) (toGlInt mode) first count
+public
+drawArrays : DrawingMode -> (first: Int) -> (count: Int) -> IO ()
+drawArrays mode first count = foreign FFI_C "glDrawArrays" (Int -> Int -> Int -> IO ()) (toGlInt mode) first count

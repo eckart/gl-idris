@@ -62,6 +62,16 @@ int idr_glGenVertexArrays() {
   return id;
 }
 
+void idr_glDeleteVertexArrays(int id) {
+  GLuint vaoId = id;
+  glDeleteVertexArrays(1, &vaoId);
+}
+
+void idr_glDeleteBuffers(int id) {
+  GLuint bufferId = id;
+  glDeleteBuffers(1, &bufferId);
+}
+
 int idr_glGenBuffers() {
   GLuint id;
   glGenBuffers(1, &id);
@@ -71,4 +81,22 @@ int idr_glGenBuffers() {
 void idr_glShaderSource(int id, void* source) {
   const GLchar* s = (GLchar*) source;
   glShaderSource(id, 1, &s, NULL);		    
+}
+
+void idr_main_loop(void* win) {
+  GLFWwindow* window = (GLFWwindow*) win;
+  while(!glfwWindowShouldClose(window)) {
+
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+  
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glfwSwapBuffers(window);
+ 
+    // Pool for events
+    glfwPollEvents();
+
+  }
 }
