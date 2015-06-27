@@ -56,6 +56,15 @@ void* idr_glfw_create_window(char* title, int width, int height) {
   return window;
 }
 
+char* idr_glGetString(int name) {
+  return (char*) glGetString(name);
+}
+
+int idr_init_glew() {
+  glewExperimental = GL_TRUE;
+  return glewInit ();
+}
+
 int idr_glGenVertexArrays() {
   GLuint id;
   glGenVertexArrays(1, &id);

@@ -62,6 +62,177 @@ public
 Vertex4 : Type
 Vertex4 = (Double, Double, Double, Double)
 
+
+data GlInfo
+  = GL_VENDOR
+  | GL_RENDERER
+  | GL_VERSION
+  | GL_EXTENSIONS
+  | GL_SHADING_LANGUAGE_VERSION
+
+instance GlConstant GlInfo Int where
+  toGlInt GL_VENDOR                    = 0x1F00
+  toGlInt GL_RENDERER                  = 0x1F01
+  toGlInt GL_VERSION                   = 0x1F02
+  toGlInt GL_EXTENSIONS                = 0x1F03
+  toGlInt GL_SHADING_LANGUAGE_VERSION  = 0x8B8C
+  fromGlInt 0x1F00 =  GL_VENDOR
+  fromGlInt 0x1F01 =  GL_RENDERER
+  fromGlInt 0x1F02 =  GL_VERSION
+  fromGlInt 0x1F03 =  GL_EXTENSIONS
+  fromGlInt 0x8B8C =  GL_SHADING_LANGUAGE_VERSION
+
+public
+getString : GlInfo -> IO String
+getString info = foreign FFI_C "idr_glGetString" (Int -> IO String) (toGlInt info)
+
+public
+getInfo : IO String
+getInfo = do vendor   <- getString GL_VENDOR
+             renderer <- getString GL_RENDERER
+             version  <- getString GL_VERSION
+             return $ foldl1 (++) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"]
+
+public             
+data GlCapability
+  = GL_BLEND
+  | GL_CLIP_DISTANCE_0
+  | GL_CLIP_DISTANCE_1
+  | GL_CLIP_DISTANCE_2
+  | GL_CLIP_DISTANCE_3
+  | GL_CLIP_DISTANCE_4
+  | GL_CLIP_DISTANCE_5
+  | GL_CLIP_DISTANCE_6
+  | GL_CLIP_DISTANCE_7
+  | GL_COLOR_LOGIC_OP
+  | GL_CULL_FACE
+  | GL_DEPTH_CLAMP
+  | GL_DEPTH_TEST
+  | GL_DITHER
+  | GL_FRAMEBUFFER_SRGB
+  | GL_LINE_SMOOTH
+  | GL_MULTISAMPLE
+  | GL_POLYGON_OFFSET_FILL
+  | GL_POLYGON_OFFSET_LINE
+  | GL_POLYGON_OFFSET_POINT
+  | GL_POLYGON_SMOOTH
+  | GL_PRIMITIVE_RESTART
+  | GL_RASTERIZER_DISCARD
+  | GL_SAMPLE_ALPHA_TO_COVERAGE
+  | GL_SAMPLE_ALPHA_TO_ONE
+  | GL_SAMPLE_COVERAGE
+  | GL_SAMPLE_SHADING
+  | GL_SAMPLE_MASK
+  | GL_SCISSOR_TEST
+  | GL_STENCIL_TEST
+  | GL_TEXTURE_CUBE_MAP_SEAMLESS
+  | GL_PROGRAM_POINT_SIZE
+
+instance GlConstant GlCapability Int where
+  toGlInt GL_BLEND           = 0x0BE2
+  toGlInt GL_CLIP_DISTANCE_0 = 0x3000
+  toGlInt GL_CLIP_DISTANCE_1 = 0x3001
+  toGlInt GL_CLIP_DISTANCE_2 = 0x3002
+  toGlInt GL_CLIP_DISTANCE_3 = 0x3003
+  toGlInt GL_CLIP_DISTANCE_4 = 0x3004
+  toGlInt GL_CLIP_DISTANCE_5 = 0x3005
+  toGlInt GL_CLIP_DISTANCE_6 = 0x3006
+  toGlInt GL_CLIP_DISTANCE_7 = 0x3007
+  toGlInt GL_COLOR_LOGIC_OP  = 0x0BF2
+  toGlInt GL_CULL_FACE       = 0x0B44
+  toGlInt GL_DEPTH_CLAMP     = 0x864F
+  toGlInt GL_DEPTH_TEST      = 0x0B71
+  toGlInt GL_DITHER          = 0x0BD0
+  toGlInt GL_FRAMEBUFFER_SRGB = 0x8DB9
+  toGlInt GL_LINE_SMOOTH      = 0x0B20
+  toGlInt GL_MULTISAMPLE      = 0x809D
+  toGlInt GL_POLYGON_OFFSET_FILL  = 0x8037
+  toGlInt GL_POLYGON_OFFSET_LINE  = 0x2A02
+  toGlInt GL_POLYGON_OFFSET_POINT = 0x2A01
+  toGlInt GL_POLYGON_SMOOTH       = 0x0B41
+  toGlInt GL_PRIMITIVE_RESTART    = 0x8F9D
+  toGlInt GL_RASTERIZER_DISCARD       = 0x8C89
+  toGlInt GL_SAMPLE_ALPHA_TO_COVERAGE = 0x809E
+  toGlInt GL_SAMPLE_ALPHA_TO_ONE      = 0x809F
+  toGlInt GL_SAMPLE_COVERAGE          = 0x80A0
+  toGlInt GL_SAMPLE_SHADING           = 0x8C36
+  toGlInt GL_SAMPLE_MASK               = 0x8E51
+  toGlInt GL_SCISSOR_TEST              = 0x0C11
+  toGlInt GL_STENCIL_TEST              = 0x0B90
+  toGlInt GL_TEXTURE_CUBE_MAP_SEAMLESS = 0x884F
+  toGlInt GL_PROGRAM_POINT_SIZE        = 0x8642
+  fromGlInt 0x0BE2 = GL_BLEND
+  fromGlInt 0x3000 = GL_CLIP_DISTANCE_0 
+  fromGlInt 0x3001 = GL_CLIP_DISTANCE_1
+  fromGlInt 0x3002 = GL_CLIP_DISTANCE_2
+  fromGlInt 0x3003 = GL_CLIP_DISTANCE_3
+  fromGlInt 0x3004 = GL_CLIP_DISTANCE_4
+  fromGlInt 0x3005 = GL_CLIP_DISTANCE_5
+  fromGlInt 0x3006 = GL_CLIP_DISTANCE_6
+  fromGlInt 0x3007 = GL_CLIP_DISTANCE_7
+  fromGlInt 0x0BF2 = GL_COLOR_LOGIC_OP
+  fromGlInt 0x0B44 = GL_CULL_FACE
+  fromGlInt 0x864F = GL_DEPTH_CLAMP
+  fromGlInt 0x0B71 = GL_DEPTH_TEST
+  fromGlInt 0x0BD0 = GL_DITHER
+  fromGlInt 0x8DB9 = GL_FRAMEBUFFER_SRGB
+  fromGlInt 0x0B20 = GL_LINE_SMOOTH
+  fromGlInt 0x809D = GL_MULTISAMPLE
+  fromGlInt 0x8037 = GL_POLYGON_OFFSET_FILL
+  fromGlInt 0x2A02 = GL_POLYGON_OFFSET_LINE
+  fromGlInt 0x2A01 = GL_POLYGON_OFFSET_POINT
+  fromGlInt 0x0B41 = GL_POLYGON_SMOOTH
+  fromGlInt 0x8F9D = GL_PRIMITIVE_RESTART
+  fromGlInt 0x8C89 = GL_RASTERIZER_DISCARD
+  fromGlInt 0x809E = GL_SAMPLE_ALPHA_TO_COVERAGE
+  fromGlInt 0x809F = GL_SAMPLE_ALPHA_TO_ONE
+  fromGlInt 0x80A0 = GL_SAMPLE_COVERAGE
+  fromGlInt 0x8C36 = GL_SAMPLE_SHADING
+  fromGlInt 0x8E51 = GL_SAMPLE_MASK
+  fromGlInt 0x0C11 = GL_SCISSOR_TEST
+  fromGlInt 0x0B90 = GL_STENCIL_TEST
+  fromGlInt 0x884F = GL_TEXTURE_CUBE_MAP_SEAMLESS
+  fromGlInt 0x8642 = GL_PROGRAM_POINT_SIZE
+
+
+public
+enable : GlCapability -> IO ()
+enable capability = foreign FFI_C "glEnable" (Int -> IO ()) (toGlInt capability)
+
+public
+data GlDepthFunc 
+  = GL_NEVER
+  | GL_LESS
+  | GL_EQUAL
+  | GL_LEQUAL
+  | GL_GREATER
+  | GL_NOTEQUAL
+  | GL_GEQUAL
+  | GL_ALWAYS
+  
+instance GlConstant GlDepthFunc Int where
+  toGlInt GL_NEVER     = 0x0200
+  toGlInt GL_LESS      = 0x0201
+  toGlInt GL_EQUAL     = 0x0202
+  toGlInt GL_LEQUAL    = 0x0203
+  toGlInt GL_GREATER   = 0x0204
+  toGlInt GL_NOTEQUAL  = 0x0205
+  toGlInt GL_GEQUAL    = 0x0206
+  toGlInt GL_ALWAYS    = 0x0207
+  fromGlInt 0x0200 = GL_NEVER
+  fromGlInt 0x0201 = GL_LESS
+  fromGlInt 0x0202 = GL_EQUAL
+  fromGlInt 0x0203 = GL_LEQUAL
+  fromGlInt 0x0204 = GL_GREATER
+  fromGlInt 0x0205 = GL_NOTEQUAL
+  fromGlInt 0x0206 = GL_GEQUAL
+  fromGlInt 0x0207 = GL_ALWAYS
+
+
+public
+depthFunc : GlDepthFunc -> IO ()
+depthFunc func = foreign FFI_C "glDepthFunc" (Int -> IO ()) (toGlInt func)
+
 public 
 clearColor : (r: Double) -> (g: Double) -> (b: Double) -> (a: Double) -> IO ()
 clearColor = foreign FFI_C "glClearColor" (Double -> Double -> Double -> Double -> IO ())

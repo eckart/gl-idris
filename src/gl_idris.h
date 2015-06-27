@@ -11,7 +11,7 @@ void idr_glDeleteVertexArrays(int id);
 int idr_glGenBuffers();
 int idr_glDeleteBuffers(int id);
 
-
+char* idr_glGetString(int name);
 
 int idr_sizeof_doubles(int len);
 void* idr_allocate_doubles(int len);
@@ -20,5 +20,9 @@ void idr_set_double(void* buf, int idx, double val);
 void idr_glShaderSource(int id, void* source);
 
 void idr_main_loop();
+
+int idr_init_glew();
+
+
 
 #endif

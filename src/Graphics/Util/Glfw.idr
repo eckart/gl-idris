@@ -15,8 +15,13 @@ data GlfwWindow = Win Ptr
 
 ||| Glfw Monitor
 abstract
-data GlfwMonitor = Monitor Ptr
+data GlfwMonitor = Monitor Ptr | DefaultMonitor
 
+public 
+defaultMonitor : GlfwMonitor
+defaultMonitor = DefaultMonitor
+
+public
 class Flag a where
   toInt   : a -> Int
 
@@ -321,6 +326,12 @@ instance GlfwConstant Bool where
   fromInt 1     = True
   fromInt 0     = False
 
+-- GLEW 
+public
+initGlew : IO Int
+initGlew = foreign FFI_C "idr_init_glew" (IO Int) 
+
+
 -- GLFW from here  
 
 public
@@ -337,15 +348,18 @@ getPrimaryMonitor = do p <- foreign FFI_C "glfwGetPrimaryMonitor" (IO Ptr)
                        pure $ Monitor p
 
 public 
-createWindow : (title: String) -> (width: Int) -> (height: Int) -> IO GlfwWindow
-createWindow title width height = 
+createWindowSimple : (title: String) -> (width: Int) -> (height: Int) -> IO GlfwWindow
+createWindowSimple title width height = 
   do ptr <- foreign FFI_C "idr_glfw_create_window" (String -> Int -> Int -> IO Ptr) title width height
      pure $ Win ptr
 
 public 
-createWindowFull : (title: String) -> (width: Int) -> (height: Int) -> GlfwMonitor -> IO GlfwWindow 
-createWindowFull title width height (Monitor ptr) = 
-  do p <- foreign FFI_C "glfwCreateWindow" (String -> Int -> Int -> Ptr -> Ptr -> IO Ptr) title width height ptr prim__null
+createWindow : (title: String) -> (width: Int) -> (height: Int) -> GlfwMonitor -> IO GlfwWindow 
+createWindow title width height (Monitor ptr) = 
+  do p <- foreign FFI_C "glfwCreateWindow" (Int -> Int -> String -> Ptr -> Ptr -> IO Ptr) width height title ptr prim__null
+     pure $ Win p
+createWindow title width height DefaultMonitor = 
+  do p <- foreign FFI_C "glfwCreateWindow" (Int -> Int -> String -> Ptr -> Ptr -> IO Ptr) width height title prim__null prim__null
      pure $ Win p
 
 public 
