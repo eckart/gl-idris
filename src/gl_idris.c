@@ -56,6 +56,24 @@ void* idr_glfw_create_window(char* title, int width, int height) {
   return window;
 }
 
+void idr_glVertexAttribPointer(int index, int size, int type, int normalized, int stride, int offset) {
+  GLboolean norm;
+  if (norm == 1) {
+    norm = GL_TRUE;
+  } else {
+    norm = GL_FALSE;
+  }
+  glVertexAttribPointer(
+			(GLuint) index,
+			(GLint) size,
+			(GLenum) type,
+			norm,
+			(GLsizei) stride,
+			(GLvoid*) offset // this will produce a warning that can be ignored (I hope)
+			);
+}
+
+
 char* idr_glGetString(int name) {
   return (char*) glGetString(name);
 }
@@ -92,6 +110,7 @@ void idr_glShaderSource(int id, void* source) {
   glShaderSource(id, 1, &s, NULL);		    
 }
 
+// only for testing!
 void idr_main_loop(void* win) {
   GLFWwindow* window = (GLFWwindow*) win;
   while(!glfwWindowShouldClose(window)) {

@@ -31,11 +31,11 @@ class GlConstant a b where
 public 
 data GlBool = GL_TRUE | GL_FALSE
 
-instance GlConstant GlBool Char where
-  toGlInt GL_TRUE  = 't'
-  toGlInt GL_FALSE = chr 0
-  fromGlInt      '\NUL' = GL_FALSE
-  fromGlInt      _  = GL_TRUE
+instance GlConstant GlBool Int where
+  toGlInt GL_TRUE  = 0
+  toGlInt GL_FALSE = 1
+  fromGlInt 1 = GL_FALSE
+  fromGlInt _ = GL_TRUE
 
 public
 data GLbitfields
@@ -54,15 +54,6 @@ instance GlConstant GLbitfields Int where
   fromGlInt 0x00000400             = GL_STENCIL_BUFFER_BIT
   fromGlInt 0x00004000             = GL_COLOR_BUFFER_BIT
   
-public
-Vertex3 : Type
-Vertex3 = (Double, Double, Double)
-
-public
-Vertex4 : Type
-Vertex4 = (Double, Double, Double, Double)
-
-
 data GlInfo
   = GL_VENDOR
   | GL_RENDERER
@@ -367,8 +358,10 @@ instance GlConstant GlUsage Int where
   fromGlInt 0x88E8             = GL_DYNAMIC_DRAW                                
   fromGlInt 0x88E9             = GL_DYNAMIC_READ                                
 
-public
-data Vectors = Vector3 | Vector4
+
+public 
+toSize : Int -> IO Int
+toSize i = foreign FFI_C "idr_sizeof_doubles" (Int -> IO Int) i
 
 public
 bufferData : BufferBindingTarget -> List Double -> GlUsage -> IO ()
@@ -432,9 +425,9 @@ instance GlConstant GlType Int where
   fromGlInt 0x140A           = GL_DOUBLE
   
 public
-vertexAttribPointer : (index: Int) -> (size: Int) -> (ty: GlType) -> (normalized: GlBool) -> (stride: Int)  -> IO () -- no offset for now
-vertexAttribPointer idx size ty normalized stride = 
-  foreign FFI_C "glVertexAttribPointer" (Int -> Int -> Int -> Char -> Int -> Ptr -> IO ()) idx size (toGlInt ty) (toGlInt normalized) stride prim__null
+vertexAttribPointer : (index: Int) -> (size: Int) -> (ty: GlType) -> (normalized: GlBool) -> (stride: Int) -> (offset: Int) -> IO () -- no offset for now
+vertexAttribPointer idx size ty normalized stride offset = 
+  foreign FFI_C "idr_glVertexAttribPointer" (Int -> Int -> Int -> Int -> Int -> Int -> IO ()) idx size (toGlInt ty) (toGlInt normalized) stride offset
 
 -- -------------------------------------------------------------
 -- Shaders

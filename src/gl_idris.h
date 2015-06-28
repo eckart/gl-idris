@@ -11,6 +11,8 @@ void idr_glDeleteVertexArrays(int id);
 int idr_glGenBuffers();
 int idr_glDeleteBuffers(int id);
 
+void idr_glVertexAttribPointer(int index, int size, int type, int normalized, int stride, int offset);
+
 char* idr_glGetString(int name);
 
 int idr_sizeof_doubles(int len);
