@@ -113,20 +113,20 @@ draw win vao = do
                    clear GL_DEPTH_BUFFER_BIT
                    bindVertexArray vao
                    drawArrays GL_TRIANGLES 0 3
-                   swapBuffers win
+                   glfwSwapBuffers win
                    
                    
 initDisplay : String -> Int -> Int -> IO GlfwWindow
 initDisplay title width height = do
-  glfw <- init
-  windowHint GLFW_CONTEXT_VERSION_MAJOR  4
-  windowHint GLFW_CONTEXT_VERSION_MINOR  1
-  windowHint GLFW_OPENGL_FORWARD_COMPAT  1
-  windowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
-  win <- createWindow title width height defaultMonitor
+  glfw <- glfwInit
+  glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR  4
+  glfwWindowHint GLFW_CONTEXT_VERSION_MINOR  1
+  glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT  1
+  glfwWindowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
+  win <- glfwCreateWindow title width height defaultMonitor
   -- TODO: test for failure - for now we pretend every thing is going to be ok
   -- terminate 
-  makeContextCurrent win
+  glfwMakeContextCurrent win
   initGlew
   info <- getInfo
   putStrLn info
@@ -135,24 +135,25 @@ initDisplay title width height = do
   return win
 
 main : IO ()
-main = do win <- initDisplay "Hello World" 640 480
+main = do win <- initDisplay "Hello Idris" 640 480
           --win <- createWindow "Hello World" 640 480 
-          setInputMode win GLFW_STICKY_KEYS 1
-          swapInterval 0
+          glfwSetInputMode win GLFW_STICKY_KEYS 1
+          glfwSwapInterval 0
           shaders <- createShaders
           (vao, buffer, colorBuffer) <- createBuffers
           eventLoop win vao
           destroyBuffers vao buffer colorBuffer
           destroyShaders shaders
-          terminate win
+          glfwDestroyWindow win
+          glfwTerminate
           pure ()
        where 
          eventLoop : GlfwWindow -> Vao -> IO ()
          eventLoop win vao = do
                       draw win vao
-                      pollEvents
-                      key <- getKey win GLFW_KEY_ESCAPE
-                      shouldClose <- windowShouldClose win
+                      glfwPollEvents
+                      key <- glfwGetKey win GLFW_KEY_ESCAPE
+                      shouldClose <- glfwWindowShouldClose win
                       if shouldClose || key == GLFW_PRESS
                       then pure ()
                       else eventLoop win vao

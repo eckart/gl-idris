@@ -53,7 +53,7 @@ instance Eq KeyEventTy where
 instance Show KeyEventTy where
   show GLFW_PRESS   = "GLFW_PRESS"
   show GLFW_RELEASE = "GLFW_RELEASE"
-  show GLFW_REPEAR  = "GLFW_REPEAT"
+  show GLFW_REPEAT  = "GLFW_REPEAT"
 
 -- | Special key is a key not represented in the 32 - 127 printable ASCII range.
 public
@@ -335,17 +335,17 @@ initGlew = foreign FFI_C "idr_init_glew" (IO Int)
 -- GLFW from here  
 
 public
-init : IO Int
-init = foreign FFI_C "glfwInit" (IO Int) 
+glfwInit : IO Int
+glfwInit = foreign FFI_C "glfwInit" (IO Int) 
 
 public
-windowHint : GlfwFlags -> Int -> IO ()
-windowHint flag val = foreign FFI_C "glfwWindowHint" (Int -> Int -> IO ()) (toInt flag) val
+glfwWindowHint : GlfwFlags -> Int -> IO ()
+glfwWindowHint flag val = foreign FFI_C "glfwWindowHint" (Int -> Int -> IO ()) (toInt flag) val
 
 public
-getPrimaryMonitor : IO GlfwMonitor
-getPrimaryMonitor = do p <- foreign FFI_C "glfwGetPrimaryMonitor" (IO Ptr) 
-                       pure $ Monitor p
+glfwGetPrimaryMonitor : IO GlfwMonitor
+glfwGetPrimaryMonitor = do p <- foreign FFI_C "glfwGetPrimaryMonitor" (IO Ptr) 
+                           pure $ Monitor p
 
 public 
 createWindowSimple : (title: String) -> (width: Int) -> (height: Int) -> IO GlfwWindow
@@ -354,59 +354,57 @@ createWindowSimple title width height =
      pure $ Win ptr
 
 public 
-createWindow : (title: String) -> (width: Int) -> (height: Int) -> GlfwMonitor -> IO GlfwWindow 
-createWindow title width height (Monitor ptr) = 
+glfwCreateWindow : (title: String) -> (width: Int) -> (height: Int) -> GlfwMonitor -> IO GlfwWindow 
+glfwCreateWindow title width height (Monitor ptr) = 
   do p <- foreign FFI_C "glfwCreateWindow" (Int -> Int -> String -> Ptr -> Ptr -> IO Ptr) width height title ptr prim__null
      pure $ Win p
-createWindow title width height DefaultMonitor = 
+glfwCreateWindow title width height DefaultMonitor = 
   do p <- foreign FFI_C "glfwCreateWindow" (Int -> Int -> String -> Ptr -> Ptr -> IO Ptr) width height title prim__null prim__null
      pure $ Win p
 
 public 
-makeContextCurrent : GlfwWindow -> IO ()
-makeContextCurrent (Win ptr) = foreign FFI_C "glfwMakeContextCurrent" (Ptr -> IO()) ptr
+isWindow : GlfwWindow -> IO Bool
+isWindow (Win ptr) = nullPtr ptr
+
+public 
+glfwMakeContextCurrent : GlfwWindow -> IO ()
+glfwMakeContextCurrent (Win ptr) = foreign FFI_C "glfwMakeContextCurrent" (Ptr -> IO()) ptr
 
 
 public 
-closeWindow : GlfwWindow -> IO ()
-closeWindow (Win ptr) = foreign FFI_C "glfwDestroyWindow" (Ptr -> IO()) ptr
+glfwDestroyWindow : GlfwWindow -> IO ()
+glfwDestroyWindow (Win ptr) = foreign FFI_C "glfwDestroyWindow" (Ptr -> IO()) ptr
 
 public 
-terminate : GlfwWindow -> IO ()
-terminate win = do makeContextCurrent win
-                   closeWindow win
-                   foreign FFI_C "glfwTerminate" (IO ())
+glfwTerminate : IO ()
+glfwTerminate  = foreign FFI_C "glfwTerminate" (IO ())
 
 public
-swapBuffers : GlfwWindow -> IO ()
-swapBuffers (Win ptr) = foreign FFI_C "glfwSwapBuffers" (Ptr -> IO()) ptr
+glfwSwapBuffers : GlfwWindow -> IO ()
+glfwSwapBuffers (Win ptr) = foreign FFI_C "glfwSwapBuffers" (Ptr -> IO()) ptr
 
 public 
-waitEvents : IO ()
-waitEvents = foreign FFI_C "glfwWaitEvents" (IO ())
+glfwWaitEvents : IO ()
+glfwWaitEvents = foreign FFI_C "glfwWaitEvents" (IO ())
 
 public 
-pollEvents : IO ()
-pollEvents = foreign FFI_C "glfwPollEvents" (IO ())
+glfwPollEvents : IO ()
+glfwPollEvents = foreign FFI_C "glfwPollEvents" (IO ())
 
 public 
-setInputMode : GlfwWindow -> GlfwFlags -> Int -> IO ()
-setInputMode (Win ptr) flag val = foreign FFI_C "glfwSetInputMode" (Ptr -> Int -> Int -> IO ()) ptr (toInt flag) val
+glfwSetInputMode : GlfwWindow -> GlfwFlags -> Int -> IO ()
+glfwSetInputMode (Win ptr) flag val = foreign FFI_C "glfwSetInputMode" (Ptr -> Int -> Int -> IO ()) ptr (toInt flag) val
 
 public 
-getKey : GlfwWindow -> FunctionKey -> IO KeyEventTy
-getKey (Win ptr) k = do e <- foreign FFI_C "glfwGetKey" (Ptr -> Int -> IO Int) ptr (toInt k)
-                        pure $ fromInt e
+glfwGetKey : GlfwWindow -> FunctionKey -> IO KeyEventTy
+glfwGetKey (Win ptr) k = do e <- foreign FFI_C "glfwGetKey" (Ptr -> Int -> IO Int) ptr (toInt k)
+                            pure $ fromInt e
                         
 public 
-windowShouldClose : GlfwWindow -> IO Bool
-windowShouldClose (Win ptr) = do flag <- foreign FFI_C "glfwWindowShouldClose" (Ptr -> IO Int) ptr
-                                 let bool = if flag == 0 then False else True
-                                 pure bool
-
-public 
-mainLoop : GlfwWindow -> IO ()
-mainLoop (Win ptr) = foreign FFI_C "idr_main_loop" (Ptr -> IO()) ptr
+glfwWindowShouldClose : GlfwWindow -> IO Bool
+glfwWindowShouldClose (Win ptr) = do flag <- foreign FFI_C "glfwWindowShouldClose" (Ptr -> IO Int) ptr
+                                     let bool = if flag == 0 then False else True
+                                     pure bool
 
 {--
 GLFWAPI void glfwGetVersion(int* major, int* minor, int* rev);
@@ -489,6 +487,6 @@ GLFWAPI GLFWglproc glfwGetProcAddress(const char* procname);
 --}
 
 public
-swapInterval : Int -> IO ()
-swapInterval interval = foreign FFI_C "glfwSwapInterval" (Int -> IO ()) interval
+glfwSwapInterval : Int -> IO ()
+glfwSwapInterval interval = foreign FFI_C "glfwSwapInterval" (Int -> IO ()) interval
 
