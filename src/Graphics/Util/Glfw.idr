@@ -328,15 +328,16 @@ instance GlfwConstant Bool where
 
 -- GLEW 
 public
-initGlew : IO Int
-initGlew = foreign FFI_C "idr_init_glew" (IO Int) 
+glewInit : IO Int
+glewInit = foreign FFI_C "idr_init_glew" (IO Int) 
 
 
 -- GLFW from here  
 
 public
-glfwInit : IO Int
-glfwInit = foreign FFI_C "glfwInit" (IO Int) 
+glfwInit : IO Bool
+glfwInit = do ret <- foreign FFI_C "glfwInit" (IO Int)
+              pure $ if ret == 1 then True else False
 
 public
 glfwWindowHint : GlfwFlags -> Int -> IO ()

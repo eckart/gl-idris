@@ -1,12 +1,13 @@
 module Main
 
-
+import Effects
+import Effect.StdIO
 import Graphics.Rendering.Gl
-import Graphics.Util.Glfw
+import Effect.Glfw
 import Graphics.Rendering.Config
 
 %include C "GL/glew.h"
-
+{--
 flatten : List (Double, Double, Double, Double) -> List Double
 flatten [] = []
 flatten ((a,b,c,d) :: xs) = [a,b,c,d] ++ (flatten xs)
@@ -115,46 +116,63 @@ draw win vao = do
                    drawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
                    
-                   
-initDisplay : String -> Int -> Int -> IO GlfwWindow
-initDisplay title width height = do
-  glfw <- glfwInit
-  glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR  4
-  glfwWindowHint GLFW_CONTEXT_VERSION_MINOR  1
-  glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT  1
-  glfwWindowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
-  win <- glfwCreateWindow title width height defaultMonitor
-  -- TODO: test for failure - for now we pretend every thing is going to be ok
-  -- terminate 
-  glfwMakeContextCurrent win
-  glewInit
-  info <- getInfo
-  putStrLn info
-  enable GL_DEPTH_TEST
-  depthFunc GL_LESS
-  return win
+--}                   
+Prog : Type -> Type -> Type -> Type
+Prog i j t = { [GLFW i,          -- GLFW effect
+                GLFW_WINDOW j,   -- a Glfw Window effect
+                STDIO]           -- a std io effect
+             } Eff t
+    
+Running : Type -> Type
+Running t = Prog GlfwMode GlfwWindow t
 
+
+-- the effectful main method
+emain : Prog () () ()
+emain = do putStrLn "Initialising"
+           putStrLn "..."
+           True <-  initialise  | False => putStrLn "Error!"
+           windowHint GLFW_CONTEXT_VERSION_MAJOR  4
+           windowHint GLFW_CONTEXT_VERSION_MINOR  1
+           windowHint GLFW_OPENGL_FORWARD_COMPAT  1
+           windowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
+--           True <- createWindow "Hello Effectful Idris" 640 480 | False => putStrLn "More Error"
+           res <- createWindow "Hello Effectful Idris" 640 480
+           case res of
+             True => do 
+                        setInputMode GLFW_STICKY_KEYS 1
+                        makeContextCurrent
+                        initGlew
+                        eventLoop
+                        destroyWindow
+                        terminate
+                        pure ()
+             False => do putStrLn "More Error"
+                         terminate
+                         pure ()
+--           setInputMode GLFW_STICKY_KEYS 1
+--           makeContextCurrent
+--           initGlew
+--           eventLoop
+--           destroyWindow
+--           terminate
+--           pure ()
+        where
+          draw : Running ()
+          draw = with Effects do
+                      putStrLn "drawing"
+          eventLoop : Running ()
+          eventLoop = do draw
+                         pollEvents
+                         ev <- getKey GLFW_KEY_ESCAPE
+                         closeClicked <- shouldClose
+                         if closeClicked || ev == GLFW_PRESS
+                           then pure ()
+                           else eventLoop
 main : IO ()
-main = do win <- initDisplay "Hello Idris" 640 480
-          --win <- createWindow "Hello World" 640 480 
-          glfwSetInputMode win GLFW_STICKY_KEYS 1
-          glfwSwapInterval 0
-          shaders <- createShaders
-          (vao, buffer, colorBuffer) <- createBuffers
-          eventLoop win vao
-          destroyBuffers vao buffer colorBuffer
-          destroyShaders shaders
-          glfwDestroyWindow win
-          glfwTerminate
-          pure ()
-       where 
-         eventLoop : GlfwWindow -> Vao -> IO ()
-         eventLoop win vao = do
-                      draw win vao
-                      glfwPollEvents
-                      key <- glfwGetKey win GLFW_KEY_ESCAPE
-                      shouldClose <- glfwWindowShouldClose win
-                      if shouldClose || key == GLFW_PRESS
-                      then pure ()
-                      else eventLoop win vao
-                              
+main = runInit [(), -- initial state for the Glfw effect
+                (), -- initial state for the Window effect
+                ()  -- initial state for the StdIO effect
+                ]
+       emain
+       
