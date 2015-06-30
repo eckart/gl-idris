@@ -78,6 +78,9 @@ pollEvents = call Poll
 makeContextCurrent : { [GLFW_WINDOW_ON] } Eff ()
 makeContextCurrent = call $ WithWindow (\win => glfwMakeContextCurrent win)
 
+swapBuffers : { [GLFW_WINDOW_ON] } Eff ()
+swapBuffers = call $ WithWindow (\win => glfwSwapBuffers win)
+
 getKey : FunctionKey -> { [GLFW_WINDOW_ON] } Eff KeyEventTy
 getKey key = call $ WithWindow (\win => glfwGetKey win key)
 

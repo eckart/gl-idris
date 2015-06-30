@@ -136,34 +136,27 @@ emain = do putStrLn "Initialising"
            windowHint GLFW_CONTEXT_VERSION_MINOR  1
            windowHint GLFW_OPENGL_FORWARD_COMPAT  1
            windowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
---           True <- createWindow "Hello Effectful Idris" 640 480 | False => putStrLn "More Error"
-           res <- createWindow "Hello Effectful Idris" 640 480
-           case res of
-             True => do 
-                        setInputMode GLFW_STICKY_KEYS 1
-                        makeContextCurrent
-                        initGlew
-                        eventLoop
-                        destroyWindow
-                        terminate
-                        pure ()
-             False => do putStrLn "More Error"
-                         terminate
-                         pure ()
---           setInputMode GLFW_STICKY_KEYS 1
---           makeContextCurrent
---           initGlew
---           eventLoop
---           destroyWindow
---           terminate
---           pure ()
+           True <- (createWindow "Hello Effectful Idris" 640 480) | False => do putStrLn "More Error"; terminate; pure ()
+           initGlew
+           setInputMode GLFW_STICKY_KEYS 1
+           makeContextCurrent
+           eventLoop
+           destroyWindow
+           terminate
+           pure ()
         where
           draw : Running ()
           draw = with Effects do
                       putStrLn "drawing"
+                      --clearColor 0 0 0 1
+                      --clear GL_COLOR_BUFFER_BIT
+                      --clear GL_DEPTH_BUFFER_BIT
+                      --drawArrays GL_TRIANGLES 0 3
+
           eventLoop : Running ()
           eventLoop = do draw
                          pollEvents
+                         swapBuffers
                          ev <- getKey GLFW_KEY_ESCAPE
                          closeClicked <- shouldClose
                          if closeClicked || ev == GLFW_PRESS
