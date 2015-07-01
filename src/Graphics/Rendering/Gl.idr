@@ -233,6 +233,12 @@ public
 glClear : GLbitfields -> IO ()
 glClear mask = foreign FFI_C "glClear" (Int -> IO()) (toGlInt mask)
 
+public 
+glClearAll : List GLbitfields -> IO ()
+glClearAll []        = pure ()
+glClearAll (m :: ms) = do glClear m
+                          glClearAll ms
+
 public
 data GlError
   = GL_NO_ERROR
@@ -476,10 +482,13 @@ public
 glCompileShader : Shader -> IO ()
 glCompileShader (MkShader id) = foreign FFI_C "glCompileShader" (Int -> IO ()) id
 
---abstract
-public
+abstract
 data Program = MkProgram Int | NoProgram
   
+public
+noProgram : Program
+noProgram = NoProgram
+
 public    
 glCreateProgram : IO Program
 glCreateProgram = do id <- foreign FFI_C "glCreateProgram" (IO Int)
