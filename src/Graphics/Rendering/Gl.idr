@@ -74,15 +74,15 @@ instance GlConstant GlInfo Int where
   fromGlInt 0x8B8C =  GL_SHADING_LANGUAGE_VERSION
 
 public
-getString : GlInfo -> IO String
-getString info = foreign FFI_C "idr_glGetString" (Int -> IO String) (toGlInt info)
+glGetString : GlInfo -> IO String
+glGetString info = foreign FFI_C "idr_glGetString" (Int -> IO String) (toGlInt info)
 
 public
-getInfo : IO String
-getInfo = do vendor   <- getString GL_VENDOR
-             renderer <- getString GL_RENDERER
-             version  <- getString GL_VERSION
-             return $ foldl1 (++) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"]
+glGetInfo : IO String
+glGetInfo = do vendor   <- glGetString GL_VENDOR
+               renderer <- glGetString GL_RENDERER
+               version  <- glGetString GL_VERSION
+               return $ foldl1 (++) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"]
 
 public             
 data GlCapability
@@ -187,8 +187,8 @@ instance GlConstant GlCapability Int where
 
 
 public
-enable : GlCapability -> IO ()
-enable capability = foreign FFI_C "glEnable" (Int -> IO ()) (toGlInt capability)
+glEnable : GlCapability -> IO ()
+glEnable capability = foreign FFI_C "glEnable" (Int -> IO ()) (toGlInt capability)
 
 public
 data GlDepthFunc 
@@ -221,17 +221,17 @@ instance GlConstant GlDepthFunc Int where
 
 
 public
-depthFunc : GlDepthFunc -> IO ()
-depthFunc func = foreign FFI_C "glDepthFunc" (Int -> IO ()) (toGlInt func)
+glDepthFunc : GlDepthFunc -> IO ()
+glDepthFunc func = foreign FFI_C "glDepthFunc" (Int -> IO ()) (toGlInt func)
 
 public 
-clearColor : (r: Double) -> (g: Double) -> (b: Double) -> (a: Double) -> IO ()
-clearColor = foreign FFI_C "glClearColor" (Double -> Double -> Double -> Double -> IO ())
+glClearColor : (r: Double) -> (g: Double) -> (b: Double) -> (a: Double) -> IO ()
+glClearColor = foreign FFI_C "glClearColor" (Double -> Double -> Double -> Double -> IO ())
 
 
 public 
-clear : GLbitfields -> IO ()
-clear mask = foreign FFI_C "glClear" (Int -> IO()) (toGlInt mask)
+glClear : GLbitfields -> IO ()
+glClear mask = foreign FFI_C "glClear" (Int -> IO()) (toGlInt mask)
 
 public
 data GlError
@@ -273,9 +273,9 @@ instance Show GlError where
   show GL_INVALID_FRAMEBUFFER_OPERATION = "GL_INVALID_FRAMEBUFFER_OPERATION"
 
 public
-getError : IO GlError
-getError = do err <- foreign FFI_C "glGetError" (IO Int) 
-              pure $ fromGlInt err
+glGetError : IO GlError
+glGetError = do err <- foreign FFI_C "glGetError" (IO Int) 
+                pure $ fromGlInt err
 
 ||| A Vertex Array Object id
 abstract
@@ -283,22 +283,22 @@ data Vao = MkVao Int
 
 ||| generate a vertex array object name
 public
-genVertexArrays : IO Vao
-genVertexArrays = do id <- foreign FFI_C "idr_glGenVertexArrays" (IO Int) 
-                     pure $ MkVao id
+glGenVertexArrays : IO Vao
+glGenVertexArrays = do id <- foreign FFI_C "idr_glGenVertexArrays" (IO Int) 
+                       pure $ MkVao id
                      
 public 
-deleteVertexArray : Vao -> IO ()
-deleteVertexArray (MkVao id) = foreign FFI_C "idr_glDeleteVertexArrays" (Int -> IO()) id
+glDeleteVertexArray : Vao -> IO ()
+glDeleteVertexArray (MkVao id) = foreign FFI_C "idr_glDeleteVertexArrays" (Int -> IO()) id
 
 ||| activate the vertex array object
 public
-bindVertexArray : Vao -> IO ()
-bindVertexArray (MkVao id) = foreign FFI_C "glBindVertexArray" (Int -> IO ()) id
+glBindVertexArray : Vao -> IO ()
+glBindVertexArray (MkVao id) = foreign FFI_C "glBindVertexArray" (Int -> IO ()) id
 
 public
-unbindVertexArray : IO ()
-unbindVertexArray = foreign FFI_C "glBindVertexArray" (Int -> IO ()) 0
+glUnbindVertexArray : IO ()
+glUnbindVertexArray = foreign FFI_C "glBindVertexArray" (Int -> IO ()) 0
 
 ||| A Vertex Buffer
 abstract
@@ -306,9 +306,9 @@ data Buffer = MkBuffer Int
 
 ||| generate a vertex array object name
 public
-genBuffers : IO Buffer
-genBuffers = do id <- foreign FFI_C "idr_glGenBuffers" (IO Int) 
-                pure $ MkBuffer id
+glGenBuffers : IO Buffer
+glGenBuffers = do id <- foreign FFI_C "idr_glGenBuffers" (IO Int) 
+                  pure $ MkBuffer id
 
 public
 data BufferBindingTarget 
@@ -320,13 +320,13 @@ instance GlConstant BufferBindingTarget Int where
 
 ||| activate the vertex buffer
 public
-bindBuffer : BufferBindingTarget -> Buffer -> IO ()
-bindBuffer target (MkBuffer id) = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) id
+glBindBuffer : BufferBindingTarget -> Buffer -> IO ()
+glBindBuffer target (MkBuffer id) = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) id
 
 ||| activate the vertex buffer
 public
-unbindBuffer : BufferBindingTarget -> IO ()
-unbindBuffer target = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) 0
+glUnbindBuffer : BufferBindingTarget -> IO ()
+glUnbindBuffer target = foreign FFI_C "glBindBuffer" (Int -> Int -> IO ()) (toGlInt target) 0
 
 public
 data GlUsage
@@ -364,36 +364,36 @@ toSize : Int -> IO Int
 toSize i = foreign FFI_C "idr_sizeof_doubles" (Int -> IO Int) i
 
 public
-bufferData : BufferBindingTarget -> List Double -> GlUsage -> IO ()
-bufferData target [] usage = pure $ ()
-bufferData target xs usage = 
+glBufferData : BufferBindingTarget -> List Double -> GlUsage -> IO ()
+glBufferData target [] usage = pure $ ()
+glBufferData target xs usage = 
   do ptr <- writeBuffer xs
      size <- foreign FFI_C "idr_sizeof_doubles" (Int -> IO Int) (toIntNat (length xs))
      foreign FFI_C "glBufferData" (Int -> Int -> Ptr -> Int -> IO ()) (toGlInt target) size ptr (toGlInt usage)
      free ptr 
      
 public
-deleteBuffer : Buffer -> IO ()
-deleteBuffer (MkBuffer id) = foreign FFI_C "idr_glDeleteBuffers" (Int -> IO()) id
+glDeleteBuffer : Buffer -> IO ()
+glDeleteBuffer (MkBuffer id) = foreign FFI_C "idr_glDeleteBuffers" (Int -> IO()) id
 
 
 ||| enables the attribute on for the given VAO
 public 
-enableVertexArrayAttrib : Vao -> Int -> IO ()
-enableVertexArrayAttrib (MkVao id) index = foreign FFI_C "glEnableVertexArrayAttrib" (Int -> Int -> IO ()) id index
+glEnableVertexArrayAttrib : Vao -> Int -> IO ()
+glEnableVertexArrayAttrib (MkVao id) index = foreign FFI_C "glEnableVertexArrayAttrib" (Int -> Int -> IO ()) id index
 
 public 
-disableVertexArrayAttrib : Vao -> Int -> IO ()
-disableVertexArrayAttrib (MkVao id) index = foreign FFI_C "glDisableVertexArrayAttrib" (Int -> Int -> IO ()) id index
+glDisableVertexArrayAttrib : Vao -> Int -> IO ()
+glDisableVertexArrayAttrib (MkVao id) index = foreign FFI_C "glDisableVertexArrayAttrib" (Int -> Int -> IO ()) id index
 
 ||| enables the attribute on for the currently active VAO
 public 
-enableVertexAttribArray : Int -> IO ()
-enableVertexAttribArray index = foreign FFI_C "glEnableVertexAttribArray" (Int -> IO ()) index
+glEnableVertexAttribArray : Int -> IO ()
+glEnableVertexAttribArray index = foreign FFI_C "glEnableVertexAttribArray" (Int -> IO ()) index
 
 public 
-disableVertexAttribArray : Int -> IO ()
-disableVertexAttribArray index = foreign FFI_C "glDisableVertexAttribArray" (Int -> IO ()) index
+glDisableVertexAttribArray : Int -> IO ()
+glDisableVertexAttribArray index = foreign FFI_C "glDisableVertexAttribArray" (Int -> IO ()) index
 
 public
 data GlType 
@@ -425,8 +425,8 @@ instance GlConstant GlType Int where
   fromGlInt 0x140A           = GL_DOUBLE
   
 public
-vertexAttribPointer : (index: Int) -> (size: Int) -> (ty: GlType) -> (normalized: GlBool) -> (stride: Int) -> (offset: Int) -> IO () -- no offset for now
-vertexAttribPointer idx size ty normalized stride offset = 
+glVertexAttribPointer : (index: Int) -> (size: Int) -> (ty: GlType) -> (normalized: GlBool) -> (stride: Int) -> (offset: Int) -> IO () -- no offset for now
+glVertexAttribPointer idx size ty normalized stride offset = 
   foreign FFI_C "idr_glVertexAttribPointer" (Int -> Int -> Int -> Int -> Int -> Int -> IO ()) idx size (toGlInt ty) (toGlInt normalized) stride offset
 
 -- -------------------------------------------------------------
@@ -461,52 +461,52 @@ abstract
 data Shader = MkShader Int
     
 public    
-createShader : ShaderType -> IO Shader
-createShader t = do ptr <- foreign FFI_C "glCreateShader" (Int -> IO Int) (toGlInt t)
-                    pure $ MkShader ptr
+glCreateShader : ShaderType -> IO Shader
+glCreateShader t = do ptr <- foreign FFI_C "glCreateShader" (Int -> IO Int) (toGlInt t)
+                      pure $ MkShader ptr
 public    
-deleteShader : Shader -> IO ()
-deleteShader (MkShader id) = foreign FFI_C "glDeleteShader" (Int -> IO ()) id
+glDeleteShader : Shader -> IO ()
+glDeleteShader (MkShader id) = foreign FFI_C "glDeleteShader" (Int -> IO ()) id
                       
 public    
-shaderSource : Shader -> String -> IO ()
-shaderSource (MkShader id) source = foreign FFI_C "idr_glShaderSource" (Int -> String -> IO ()) id source
+glShaderSource : Shader -> String -> IO ()
+glShaderSource (MkShader id) source = foreign FFI_C "idr_glShaderSource" (Int -> String -> IO ()) id source
 
 public    
-compileShader : Shader -> IO ()
-compileShader (MkShader id) = foreign FFI_C "glCompileShader" (Int -> IO ()) id
+glCompileShader : Shader -> IO ()
+glCompileShader (MkShader id) = foreign FFI_C "glCompileShader" (Int -> IO ()) id
 
 --abstract
 public
 data Program = MkProgram Int | NoProgram
   
 public    
-createProgram : IO Program
-createProgram = do id <- foreign FFI_C "glCreateProgram" (IO Int)
-                   pure $ MkProgram id
+glCreateProgram : IO Program
+glCreateProgram = do id <- foreign FFI_C "glCreateProgram" (IO Int)
+                     pure $ MkProgram id
 
 public    
-deleteProgram : Program -> IO ()
-deleteProgram (MkProgram id ) = foreign FFI_C "glDeleteProgram" (Int -> IO()) id
+glDeleteProgram : Program -> IO ()
+glDeleteProgram (MkProgram id ) = foreign FFI_C "glDeleteProgram" (Int -> IO()) id
 
 public    
-linkProgram : Program -> IO ()
-linkProgram (MkProgram id ) = foreign FFI_C "glLinkProgram" (Int -> IO()) id
+glLinkProgram : Program -> IO ()
+glLinkProgram (MkProgram id ) = foreign FFI_C "glLinkProgram" (Int -> IO()) id
                      
 public    
-attachShader : Program -> Shader -> IO ()
-attachShader (MkProgram programId) (MkShader shaderId) = 
+glAttachShader : Program -> Shader -> IO ()
+glAttachShader (MkProgram programId) (MkShader shaderId) = 
   foreign FFI_C "glAttachShader" (Int -> Int -> IO()) programId shaderId                   
 
 public    
-detachShader : Program -> Shader -> IO ()
-detachShader (MkProgram programId) (MkShader shaderId) = 
+glDetachShader : Program -> Shader -> IO ()
+glDetachShader (MkProgram programId) (MkShader shaderId) = 
   foreign FFI_C "glDetachShader" (Int -> Int -> IO()) programId shaderId                   
 
 public    
-useProgram : Program -> IO ()
-useProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
-useProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
+glUseProgram : Program -> IO ()
+glUseProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
+glUseProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
 
 {--
 public 
@@ -565,5 +565,5 @@ instance GlConstant DrawingMode Int where
   fromGlInt 0x000E = GL_PATCHES
   
 public
-drawArrays : DrawingMode -> (first: Int) -> (count: Int) -> IO ()
-drawArrays mode first count = foreign FFI_C "glDrawArrays" (Int -> Int -> Int -> IO ()) (toGlInt mode) first count
+glDrawArrays : DrawingMode -> (first: Int) -> (count: Int) -> IO ()
+glDrawArrays mode first count = foreign FFI_C "glDrawArrays" (Int -> Int -> Int -> IO ()) (toGlInt mode) first count

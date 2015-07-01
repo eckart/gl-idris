@@ -12,33 +12,33 @@ flatten [] = []
 flatten ((a,b,c,d) :: xs) = [a,b,c,d] ++ (flatten xs)
 
 showError : String -> IO ()
-showError msg = do err <- getError
+showError msg = do err <- glGetError
                    putStrLn $ msg ++ (show err)
 
 createShaders : IO (Shader, Shader, Program)
 createShaders = do
-  getError
-  vertexShader <- createShader GL_VERTEX_SHADER
+  glGetError
+  vertexShader <- glCreateShader GL_VERTEX_SHADER
   
   showError "create vertex shader "
   vtx <- readFile "shader.vtx"
-  shaderSource vertexShader vtx
-  compileShader vertexShader
+  glShaderSource vertexShader vtx
+  glCompileShader vertexShader
   
-  fragmentShader <- createShader GL_FRAGMENT_SHADER
+  fragmentShader <- glCreateShader GL_FRAGMENT_SHADER
   showError "create fragment shader "
 
   frg <- readFile "shader.frg"
-  shaderSource fragmentShader frg 
-  compileShader fragmentShader  
+  glShaderSource fragmentShader frg 
+  glCompileShader fragmentShader  
   
-  program <- createProgram
-  attachShader program vertexShader
-  attachShader program fragmentShader
+  program <- glCreateProgram
+  glAttachShader program vertexShader
+  glAttachShader program fragmentShader
   showError "attach shaders "
   
-  linkProgram program
-  useProgram program
+  glLinkProgram program
+  glUseProgram program
   showError "link and use "
 
   pure (vertexShader, fragmentShader, program)
@@ -46,13 +46,13 @@ createShaders = do
 
 destroyShaders : (Shader, Shader, Program) -> IO ()
 destroyShaders (shader1, shader2, program) = do
-  getError
-  useProgram NoProgram
-  detachShader program shader1
-  detachShader program shader2
-  deleteShader shader1
-  deleteShader shader2
-  deleteProgram program
+  glGetError
+  glUseProgram NoProgram
+  glDetachShader program shader1
+  glDetachShader program shader2
+  glDeleteShader shader1
+  glDeleteShader shader2
+  glDeleteProgram program
   showError "delete shaders "
   pure ()
 
@@ -69,22 +69,22 @@ createBuffers = do
     (0.0, 1.0, 0.0, 1.0),
     (0.0, 0.0, 1.0, 1.0)
   ]
-  getError
+  glGetError
 
-  vao <- genVertexArrays
-  bindVertexArray vao
-  buffer <- genBuffers
-  bindBuffer GL_ARRAY_BUFFER buffer
-  bufferData GL_ARRAY_BUFFER (flatten vertices) GL_STATIC_DRAW
+  vao <- glGenVertexArrays
+  glBindVertexArray vao
+  buffer <- glGenBuffers
+  glBindBuffer GL_ARRAY_BUFFER buffer
+  glBufferData GL_ARRAY_BUFFER (flatten vertices) GL_STATIC_DRAW
   showError "vertex buffer data "
-  enableVertexAttribArray 0
-  vertexAttribPointer 0 4 GL_DOUBLE GL_FALSE 0 0
+  glEnableVertexAttribArray 0
+  glVertexAttribPointer 0 4 GL_DOUBLE GL_FALSE 0 0
 
-  colorBuffer <- genBuffers
-  bindBuffer GL_ARRAY_BUFFER colorBuffer
-  bufferData GL_ARRAY_BUFFER (flatten colors) GL_STATIC_DRAW
-  enableVertexAttribArray 1
-  vertexAttribPointer 1 4 GL_DOUBLE GL_FALSE 0 0
+  colorBuffer <- glGenBuffers
+  glBindBuffer GL_ARRAY_BUFFER colorBuffer
+  glBufferData GL_ARRAY_BUFFER (flatten colors) GL_STATIC_DRAW
+  glEnableVertexAttribArray 1
+  glVertexAttribPointer 1 4 GL_DOUBLE GL_FALSE 0 0
 
   showError "color buffer "
   pure $ (vao, buffer, colorBuffer)
@@ -92,27 +92,27 @@ createBuffers = do
 
 destroyBuffers : Vao -> Buffer -> Buffer -> IO ()
 destroyBuffers vao buffer colorBuffer = do
-  disableVertexAttribArray 1
-  disableVertexAttribArray 0
+  glDisableVertexAttribArray 1
+  glDisableVertexAttribArray 0
   
-  unbindBuffer GL_ARRAY_BUFFER
+  glUnbindBuffer GL_ARRAY_BUFFER
 
-  deleteBuffer buffer
-  deleteBuffer colorBuffer
+  glDeleteBuffer buffer
+  glDeleteBuffer colorBuffer
 
-  unbindVertexArray
+  glUnbindVertexArray
   
-  deleteVertexArray vao
+  glDeleteVertexArray vao
 
   showError "destroy buffers "
 
 draw : GlfwWindow -> Vao -> IO ()
 draw win vao = do 
-                   clearColor 0 0 0 1
-                   clear GL_COLOR_BUFFER_BIT
-                   clear GL_DEPTH_BUFFER_BIT
-                   bindVertexArray vao
-                   drawArrays GL_TRIANGLES 0 3
+                   glClearColor 0 0 0 1
+                   glClear GL_COLOR_BUFFER_BIT
+                   glClear GL_DEPTH_BUFFER_BIT
+                   glBindVertexArray vao
+                   glDrawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
                    
                    
@@ -128,10 +128,10 @@ initDisplay title width height = do
   -- terminate 
   glfwMakeContextCurrent win
   glewInit
-  info <- getInfo
+  info <- glGetInfo
   putStrLn info
-  enable GL_DEPTH_TEST
-  depthFunc GL_LESS
+  glEnable GL_DEPTH_TEST
+  glDepthFunc GL_LESS
   return win
 
 main : IO ()
