@@ -30,11 +30,11 @@ GL_ON = GL GlState
 GL_OFF : EFFECT
 GL_OFF = GL ()
 
-initialise : { [GL_OFF] ==> [GL_ON] } Eff ()
-initialise = call Initialise
+startGl : { [GL_OFF] ==> [GL_ON] } Eff ()
+startGl = call Initialise
 
-terminate : { [GL_ON] ==> [GL_OFF] } Eff ()
-terminate = call Terminate
+stopGl : { [GL_ON] ==> [GL_OFF] } Eff ()
+stopGl = call Terminate
 
 data Color = RGBA Double Double Double Double
 
