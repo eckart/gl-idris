@@ -19,10 +19,23 @@ writeBuffer ds =
         writeBuffer' ptr i (d :: ds) = do foreign FFI_C "idr_set_double" (Ptr -> Int -> Double -> IO()) ptr (toIntNat i) d
                                           writeBuffer' ptr (S i) ds
 
+writeIntBuffer : List Int -> IO Ptr
+writeIntBuffer ds = 
+  do ptr <- foreign FFI_C "idr_allocate_ints" (Int -> IO Ptr) (toIntNat (length ds))
+     writeBuffer' ptr Z ds
+     pure ptr
+  where writeBuffer' : Ptr -> Nat -> List Int -> IO ()
+        writeBuffer' ptr i []        = pure ()
+        writeBuffer' ptr i (d :: ds) = do foreign FFI_C "idr_set_int" (Ptr -> Int -> Int -> IO()) ptr (toIntNat i) d
+                                          writeBuffer' ptr (S i) ds
+
 free : Ptr -> IO ()
 free ptr = foreign FFI_C "free" (Ptr -> IO ()) ptr
  
 -- --------------------------------------------------------------
+
+class GlId a where
+  getId: a -> Int
 
 class GlConstant a b where
   toGlInt   : a -> b
@@ -576,3 +589,24 @@ instance GlConstant DrawingMode Int where
 public
 glDrawArrays : DrawingMode -> (first: Int) -> (count: Int) -> IO ()
 glDrawArrays mode first count = foreign FFI_C "glDrawArrays" (Int -> Int -> Int -> IO ()) (toGlInt mode) first count
+
+abstract
+data Texture = MkTexture Int
+
+instance GlId Texture where
+  getId (MkTexture id) = id
+  
+public 
+glLoadPNGTexture : String -> IO Texture
+glLoadPNGTexture filename = do id <- foreign FFI_C "png_texture_load" (String -> IO Int) filename
+                               pure $ MkTexture id
+
+
+public 
+glDeleteTextures : List Texture -> IO ()
+glDeleteTextures textures =   
+  do ptr <- writeIntBuffer (map getId textures)
+     foreign FFI_C "glDeleteTextures" (Int -> Ptr -> IO ()) (toIntNat (length textures)) ptr
+     free ptr 
+
+ 

@@ -141,7 +141,9 @@ main = do win <- initDisplay "Hello Idris" 640 480
           glfwSwapInterval 0
           shaders <- createShaders
           (vao, buffer, colorBuffer) <- createBuffers
+          texture <- glLoadPNGTexture "logo.png"
           eventLoop win vao
+          glDeleteTextures [texture]
           destroyBuffers vao buffer colorBuffer
           destroyShaders shaders
           glfwDestroyWindow win
