@@ -37,18 +37,18 @@ free ptr = foreign FFI_C "free" (Ptr -> IO ()) ptr
 class GlId a where
   getId: a -> Int
 
-class GlConstant a b where
+class GlEnum a b where
   toGlInt   : a -> b
+
+class GlEnum a b => GlConstant a b where
   fromGlInt : b -> a
 
 public 
 data GlBool = GL_TRUE | GL_FALSE
 
-instance GlConstant GlBool Int where
+instance GlEnum GlBool Int where
   toGlInt GL_TRUE  = 0
   toGlInt GL_FALSE = 1
-  fromGlInt 1 = GL_FALSE
-  fromGlInt _ = GL_TRUE
 
 public
 data GLbitfields
@@ -57,15 +57,11 @@ data GLbitfields
   | GL_STENCIL_BUFFER_BIT
   | GL_COLOR_BUFFER_BIT
 
-instance GlConstant GLbitfields Int where
+instance GlEnum GLbitfields Int where
   toGlInt  GL_DEPTH_BUFFER_BIT     = 0x00000100
   toGlInt  GL_ACCUM_BUFFER_BIT     = 0x00000200
   toGlInt  GL_STENCIL_BUFFER_BIT   = 0x00000400
   toGlInt  GL_COLOR_BUFFER_BIT     = 0x00004000
-  fromGlInt 0x00000100             = GL_DEPTH_BUFFER_BIT
-  fromGlInt 0x00000200             = GL_ACCUM_BUFFER_BIT
-  fromGlInt 0x00000400             = GL_STENCIL_BUFFER_BIT
-  fromGlInt 0x00004000             = GL_COLOR_BUFFER_BIT
   
 data GlInfo
   = GL_VENDOR
@@ -74,17 +70,12 @@ data GlInfo
   | GL_EXTENSIONS
   | GL_SHADING_LANGUAGE_VERSION
 
-instance GlConstant GlInfo Int where
+instance GlEnum GlInfo Int where
   toGlInt GL_VENDOR                    = 0x1F00
   toGlInt GL_RENDERER                  = 0x1F01
   toGlInt GL_VERSION                   = 0x1F02
   toGlInt GL_EXTENSIONS                = 0x1F03
   toGlInt GL_SHADING_LANGUAGE_VERSION  = 0x8B8C
-  fromGlInt 0x1F00 =  GL_VENDOR
-  fromGlInt 0x1F01 =  GL_RENDERER
-  fromGlInt 0x1F02 =  GL_VERSION
-  fromGlInt 0x1F03 =  GL_EXTENSIONS
-  fromGlInt 0x8B8C =  GL_SHADING_LANGUAGE_VERSION
 
 public
 glGetString : GlInfo -> IO String
@@ -132,7 +123,7 @@ data GlCapability
   | GL_TEXTURE_CUBE_MAP_SEAMLESS
   | GL_PROGRAM_POINT_SIZE
 
-instance GlConstant GlCapability Int where
+instance GlEnum GlCapability Int where
   toGlInt GL_BLEND           = 0x0BE2
   toGlInt GL_CLIP_DISTANCE_0 = 0x3000
   toGlInt GL_CLIP_DISTANCE_1 = 0x3001
@@ -165,39 +156,6 @@ instance GlConstant GlCapability Int where
   toGlInt GL_STENCIL_TEST              = 0x0B90
   toGlInt GL_TEXTURE_CUBE_MAP_SEAMLESS = 0x884F
   toGlInt GL_PROGRAM_POINT_SIZE        = 0x8642
-  fromGlInt 0x0BE2 = GL_BLEND
-  fromGlInt 0x3000 = GL_CLIP_DISTANCE_0 
-  fromGlInt 0x3001 = GL_CLIP_DISTANCE_1
-  fromGlInt 0x3002 = GL_CLIP_DISTANCE_2
-  fromGlInt 0x3003 = GL_CLIP_DISTANCE_3
-  fromGlInt 0x3004 = GL_CLIP_DISTANCE_4
-  fromGlInt 0x3005 = GL_CLIP_DISTANCE_5
-  fromGlInt 0x3006 = GL_CLIP_DISTANCE_6
-  fromGlInt 0x3007 = GL_CLIP_DISTANCE_7
-  fromGlInt 0x0BF2 = GL_COLOR_LOGIC_OP
-  fromGlInt 0x0B44 = GL_CULL_FACE
-  fromGlInt 0x864F = GL_DEPTH_CLAMP
-  fromGlInt 0x0B71 = GL_DEPTH_TEST
-  fromGlInt 0x0BD0 = GL_DITHER
-  fromGlInt 0x8DB9 = GL_FRAMEBUFFER_SRGB
-  fromGlInt 0x0B20 = GL_LINE_SMOOTH
-  fromGlInt 0x809D = GL_MULTISAMPLE
-  fromGlInt 0x8037 = GL_POLYGON_OFFSET_FILL
-  fromGlInt 0x2A02 = GL_POLYGON_OFFSET_LINE
-  fromGlInt 0x2A01 = GL_POLYGON_OFFSET_POINT
-  fromGlInt 0x0B41 = GL_POLYGON_SMOOTH
-  fromGlInt 0x8F9D = GL_PRIMITIVE_RESTART
-  fromGlInt 0x8C89 = GL_RASTERIZER_DISCARD
-  fromGlInt 0x809E = GL_SAMPLE_ALPHA_TO_COVERAGE
-  fromGlInt 0x809F = GL_SAMPLE_ALPHA_TO_ONE
-  fromGlInt 0x80A0 = GL_SAMPLE_COVERAGE
-  fromGlInt 0x8C36 = GL_SAMPLE_SHADING
-  fromGlInt 0x8E51 = GL_SAMPLE_MASK
-  fromGlInt 0x0C11 = GL_SCISSOR_TEST
-  fromGlInt 0x0B90 = GL_STENCIL_TEST
-  fromGlInt 0x884F = GL_TEXTURE_CUBE_MAP_SEAMLESS
-  fromGlInt 0x8642 = GL_PROGRAM_POINT_SIZE
-
 
 public
 glEnable : GlCapability -> IO ()
@@ -214,7 +172,7 @@ data GlDepthFunc
   | GL_GEQUAL
   | GL_ALWAYS
   
-instance GlConstant GlDepthFunc Int where
+instance GlEnum GlDepthFunc Int where
   toGlInt GL_NEVER     = 0x0200
   toGlInt GL_LESS      = 0x0201
   toGlInt GL_EQUAL     = 0x0202
@@ -223,15 +181,6 @@ instance GlConstant GlDepthFunc Int where
   toGlInt GL_NOTEQUAL  = 0x0205
   toGlInt GL_GEQUAL    = 0x0206
   toGlInt GL_ALWAYS    = 0x0207
-  fromGlInt 0x0200 = GL_NEVER
-  fromGlInt 0x0201 = GL_LESS
-  fromGlInt 0x0202 = GL_EQUAL
-  fromGlInt 0x0203 = GL_LEQUAL
-  fromGlInt 0x0204 = GL_GREATER
-  fromGlInt 0x0205 = GL_NOTEQUAL
-  fromGlInt 0x0206 = GL_GEQUAL
-  fromGlInt 0x0207 = GL_ALWAYS
-
 
 public
 glDepthFunc : GlDepthFunc -> IO ()
@@ -263,7 +212,7 @@ data GlError
   | GL_STACK_OVERFLOW
   | GL_INVALID_FRAMEBUFFER_OPERATION
 
-instance GlConstant GlError Int where
+instance GlEnum GlError Int where
   toGlInt GL_NO_ERROR                        = 0 
   toGlInt GL_INVALID_ENUM                    = 0x0500
   toGlInt GL_INVALID_VALUE                   = 0x0501
@@ -272,6 +221,8 @@ instance GlConstant GlError Int where
   toGlInt GL_STACK_UNDERFLOW                 = 0x0504
   toGlInt GL_STACK_OVERFLOW                  = 0x0505
   toGlInt GL_INVALID_FRAMEBUFFER_OPERATION   = 0x0506
+
+instance GlConstant GlError Int where
   fromGlInt 0      = GL_NO_ERROR
   fromGlInt 0x0500 = GL_INVALID_ENUM
   fromGlInt 0x0501 = GL_INVALID_VALUE
@@ -332,10 +283,11 @@ glGenBuffers = do id <- foreign FFI_C "idr_glGenBuffers" (IO Int)
 public
 data BufferBindingTarget 
   = GL_ARRAY_BUFFER
+  | GL_ELEMENT_ARRAY_BUFFER
 
-instance GlConstant BufferBindingTarget Int where
-  toGlInt   GL_ARRAY_BUFFER  = 0x8892
-  fromGlInt          0x8892  = GL_ARRAY_BUFFER
+instance GlEnum BufferBindingTarget Int where
+  toGlInt GL_ARRAY_BUFFER         = 0x8892
+  toGlInt GL_ELEMENT_ARRAY_BUFFER = 0x8893
 
 ||| activate the vertex buffer
 public
@@ -359,7 +311,7 @@ data GlUsage
   | GL_DYNAMIC_READ 
   | GL_DYNAMIC_COPY
 
-instance GlConstant GlUsage Int where
+instance GlEnum GlUsage Int where
   toGlInt GL_STREAM_DRAW       = 0x88E0
   toGlInt GL_STREAM_READ       = 0x88E1
   toGlInt GL_STREAM_COPY       = 0x88E2
@@ -368,15 +320,6 @@ instance GlConstant GlUsage Int where
   toGlInt GL_STATIC_COPY       = 0x88E6
   toGlInt GL_DYNAMIC_DRAW      = 0x88E8
   toGlInt GL_DYNAMIC_READ      = 0x88E9
-  fromGlInt 0x88E0             = GL_STREAM_DRAW                                 
-  fromGlInt 0x88E1             = GL_STREAM_READ                                 
-  fromGlInt 0x88E2             = GL_STREAM_COPY                                 
-  fromGlInt 0x88E4             = GL_STATIC_DRAW                                 
-  fromGlInt 0x88E5             = GL_STATIC_READ                                 
-  fromGlInt 0x88E6             = GL_STATIC_COPY                                 
-  fromGlInt 0x88E8             = GL_DYNAMIC_DRAW                                
-  fromGlInt 0x88E9             = GL_DYNAMIC_READ                                
-
 
 public 
 toSize : Int -> IO Int
@@ -390,7 +333,17 @@ glBufferData target xs usage =
      size <- foreign FFI_C "idr_sizeof_doubles" (Int -> IO Int) (toIntNat (length xs))
      foreign FFI_C "glBufferData" (Int -> Int -> Ptr -> Int -> IO ()) (toGlInt target) size ptr (toGlInt usage)
      free ptr 
+
      
+public
+glBufferDatai : BufferBindingTarget -> List Int -> GlUsage -> IO ()
+glBufferDatai target [] usage = pure $ ()
+glBufferDatai target xs usage = 
+  do ptr <- writeIntBuffer xs
+     size <- foreign FFI_C "idr_sizeof_ints" (Int -> IO Int) (toIntNat (length xs))
+     foreign FFI_C "glBufferData" (Int -> Int -> Ptr -> Int -> IO ()) (toGlInt target) size ptr (toGlInt usage)
+     free ptr 
+               
 public
 glDeleteBuffer : Buffer -> IO ()
 glDeleteBuffer (MkBuffer id) = foreign FFI_C "idr_glDeleteBuffers" (Int -> IO()) id
@@ -425,7 +378,7 @@ data GlType
   | GL_FLOAT
   | GL_DOUBLE
 
-instance GlConstant GlType Int where
+instance GlEnum GlType Int where
   toGlInt GL_BYTE            = 0x1400
   toGlInt GL_UNSIGNED_BYTE   = 0x1401
   toGlInt GL_SHORT           = 0x1402
@@ -434,14 +387,6 @@ instance GlConstant GlType Int where
   toGlInt GL_UNSIGNED_INT    = 0x1405
   toGlInt GL_FLOAT           = 0x1406
   toGlInt GL_DOUBLE          = 0x140A
-  fromGlInt 0x1400           = GL_BYTE
-  fromGlInt 0x1401           = GL_UNSIGNED_BYTE
-  fromGlInt 0x1402           = GL_SHORT
-  fromGlInt 0x1403           = GL_UNSIGNED_SHORT
-  fromGlInt 0x1404           = GL_INT
-  fromGlInt 0x1405           = GL_UNSIGNED_INT
-  fromGlInt 0x1406           = GL_FLOAT
-  fromGlInt 0x140A           = GL_DOUBLE
   
 public
 glVertexAttribPointer : (index: Int) -> (size: Int) -> (ty: GlType) -> (normalized: GlBool) -> (stride: Int) -> (offset: Int) -> IO () -- no offset for now
@@ -462,19 +407,13 @@ data ShaderType
   | GL_FRAGMENT_SHADER      
     
     
-instance GlConstant ShaderType Int where 
+instance GlEnum ShaderType Int where 
   --toGlInt GL_COMPUTE_SHADER           = 
   toGlInt GL_VERTEX_SHADER          = 0x8B31
   toGlInt GL_TESS_CONTROL_SHADER    = 0x8E88
   toGlInt GL_TESS_EVALUATION_SHADER = 0x8E87
   toGlInt GL_GEOMETRY_SHADER        = 0x8DD9
   toGlInt GL_FRAGMENT_SHADER        = 0x8B30
-  --fromGlInt GL_COMPUTE_SHADER           = 
-  fromGlInt 0x8B31 = GL_VERTEX_SHADER          
-  fromGlInt 0x8E88 = GL_TESS_CONTROL_SHADER    
-  fromGlInt 0x8E87 = GL_TESS_EVALUATION_SHADER 
-  fromGlInt 0x8DD9 = GL_GEOMETRY_SHADER        
-  fromGlInt 0x8B30  = GL_FRAGMENT_SHADER        
 
 abstract
 data Shader = MkShader Int
@@ -560,7 +499,7 @@ data DrawingMode
   | GL_TRIANGLES_ADJACENCY
   | GL_PATCHES
     
-instance GlConstant DrawingMode Int where
+instance GlEnum DrawingMode Int where
   toGlInt GL_POINTS                   = 0x0000
   toGlInt GL_LINE_STRIP               = 0x0003
   toGlInt GL_LINE_LOOP                = 0x0002
@@ -573,22 +512,17 @@ instance GlConstant DrawingMode Int where
   toGlInt GL_TRIANGLE_STRIP_ADJACENCY = 0x000D
   toGlInt GL_TRIANGLES_ADJACENCY      = 0x000C
   toGlInt GL_PATCHES                  = 0x000E
-  fromGlInt 0x0000 = GL_POINTS
-  fromGlInt 0x0003 = GL_LINE_STRIP
-  fromGlInt 0x0002 = GL_LINE_LOOP
-  fromGlInt 0x0001 = GL_LINES
-  fromGlInt 0x000B = GL_LINE_STRIP_ADJACENCY
-  fromGlInt 0x000A = GL_LINES_ADJACENCY
-  fromGlInt 0x0005 = GL_TRIANGLE_STRIP
-  fromGlInt 0x0006 = GL_TRIANGLE_FAN
-  fromGlInt 0x0004 = GL_TRIANGLES
-  fromGlInt 0x000D = GL_TRIANGLE_STRIP_ADJACENCY
-  fromGlInt 0x000C = GL_TRIANGLES_ADJACENCY
-  fromGlInt 0x000E = GL_PATCHES
   
 public
 glDrawArrays : DrawingMode -> (first: Int) -> (count: Int) -> IO ()
 glDrawArrays mode first count = foreign FFI_C "glDrawArrays" (Int -> Int -> Int -> IO ()) (toGlInt mode) first count
+
+public
+glDrawElements : DrawingMode -> (count: Int) -> IO ()
+glDrawElements mode count = 
+  foreign FFI_C "idr_glDrawElements" (Int -> Int -> IO ()) (toGlInt mode) count
+
+-- ----------------------------------------------------------------- [ Textures ]
 
 abstract
 data Texture = MkTexture Int
@@ -608,5 +542,90 @@ glDeleteTextures textures =
   do ptr <- writeIntBuffer (map getId textures)
      foreign FFI_C "glDeleteTextures" (Int -> Ptr -> IO ()) (toIntNat (length textures)) ptr
      free ptr 
+
+
+public
+data TextureTarget
+     = GL_TEXTURE_1D
+     | GL_TEXTURE_1D_ARRAY
+     | GL_TEXTURE_2D
+     | GL_TEXTURE_2D_ARRAY
+     | GL_TEXTURE_2D_MULTISAMPLE
+     | GL_TEXTURE_2D_MULTISAMPLE_ARRAY
+     | GL_TEXTURE_3D
+     | GL_TEXTURE_CUBE_MAP
+     | GL_TEXTURE_CUBE_MAP_ARRAY
+     | GL_TEXTURE_RECTANGLE
+
+instance GlEnum TextureTarget Int where
+  toGlInt GL_TEXTURE_1D                    = 0x0DE0
+  toGlInt GL_TEXTURE_1D_ARRAY              = 0x8C18
+  toGlInt GL_TEXTURE_2D                    = 0x0DE1
+  toGlInt GL_TEXTURE_2D_ARRAY              = 0x8C1A
+  toGlInt GL_TEXTURE_2D_MULTISAMPLE        = 0x9100
+  toGlInt GL_TEXTURE_2D_MULTISAMPLE_ARRAY  = 0x9102
+  toGlInt GL_TEXTURE_3D                    = 0x806F
+  toGlInt GL_TEXTURE_CUBE_MAP              = 0x8513
+  toGlInt GL_TEXTURE_CUBE_MAP_ARRAY        = 0x9009
+  toGlInt GL_TEXTURE_RECTANGLE             = 0x84F5
+
+public
+data TextureParamName
+  = GL_TEXTURE_BASE_LEVEL
+  | GL_TEXTURE_COMPARE_FUNC
+  | GL_TEXTURE_COMPARE_MODE
+  | GL_TEXTURE_LOD_BIAS
+  | GL_TEXTURE_MIN_FILTER
+  | GL_TEXTURE_MAG_FILTER
+  | GL_TEXTURE_MIN_LOD
+  | GL_TEXTURE_MAX_LOD
+  | GL_TEXTURE_MAX_LEVEL
+  | GL_TEXTURE_SWIZZLE_R
+  | GL_TEXTURE_SWIZZLE_G
+  | GL_TEXTURE_SWIZZLE_B
+  | GL_TEXTURE_SWIZZLE_A
+  | GL_TEXTURE_WRAP_S
+  | GL_TEXTURE_WRAP_T
+  | GL_TEXTURE_WRAP_R
+  
+instance GlEnum TextureParamName Int where
+  toGlInt GL_TEXTURE_BASE_LEVEL         = 0x813C
+  toGlInt GL_TEXTURE_COMPARE_FUNC       = 0x884D
+  toGlInt GL_TEXTURE_COMPARE_MODE       = 0x884C
+  toGlInt GL_TEXTURE_LOD_BIAS           = 0x8501
+  toGlInt GL_TEXTURE_MIN_FILTER         = 0x2801
+  toGlInt GL_TEXTURE_MAG_FILTER         = 0x2800
+  toGlInt GL_TEXTURE_MIN_LOD            = 0x813A
+  toGlInt GL_TEXTURE_MAX_LOD            = 0x813B
+  toGlInt GL_TEXTURE_MAX_LEVEL          = 0x813D
+  toGlInt GL_TEXTURE_WRAP_S             = 0x2802
+  toGlInt GL_TEXTURE_WRAP_T             = 0x2803
+  toGlInt GL_TEXTURE_WRAP_R             = 0x8072
+
+public
+data TextureParam 
+  = GL_NEAREST                -- filter
+  | GL_LINEAR
+  | GL_CLAMP_TO_EDGE          -- texture clamping
+  | GL_CLAMP_TO_BORDER
+  | GL_MIRRORED_REPEAT
+  | GL_CLAMP
+  | GL_REPEAT
+
+instance GlEnum TextureParam Int where
+  -- filtering
+  toGlInt GL_NEAREST = 0x2600
+  toGlInt GL_LINEAR  = 0x2601
+  -- clamping
+  toGlInt GL_CLAMP_TO_EDGE         = 0x812F
+  toGlInt GL_CLAMP_TO_BORDER       = 0x812D
+  toGlInt GL_MIRRORED_REPEAT       = 0x8370
+  toGlInt GL_CLAMP                 = 0x2900
+  toGlInt GL_REPEAT                = 0x2901
+
+public
+glTexParameteri : TextureTarget -> TextureParamName -> TextureParam -> IO ()
+glTexParameteri target pname param =
+  foreign FFI_C "glTexParameteri" (Int -> Int -> Int -> IO ()) (toGlInt target) (toGlInt pname) (toGlInt param)
 
  

@@ -13,6 +13,8 @@ int idr_glDeleteBuffers(int id);
 
 void idr_glVertexAttribPointer(int index, int size, int type, int normalized, int stride, int offset);
 
+void idr_glDrawElements(int mode, int size);
+
 char* idr_glGetString(int name);
 
 int idr_sizeof_doubles(int len);

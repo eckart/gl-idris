@@ -56,16 +56,28 @@ destroyShaders (shader1, shader2, program) = do
   showError "delete shaders "
   pure ()
 
-createBuffers : IO (Vao, Buffer, Buffer)
+createBuffers : IO (Vao, Buffer, Buffer, Buffer)
 createBuffers = do
+  {--
+    v2 ---  v1
+    |    /  |
+    |   /   |
+    v3 --   v4
+  --}
   let vertices = [
-    ( -0.8, -0.8, 0.0, 1.0),
-    (  0.0,  0.8, 0.0, 1.0),
-    (  0.8, -0.8, 0.0, 1.0)
+    (   0.8,  0.8, 0.0, 1.0),
+    (  -0.8,  0.8, 0.0, 1.0),
+    (  -0.8, -0.8, 0.0, 1.0),
+    (   0.8, -0.8, 0.0, 1.0)
   ]
+
+  let indices = the (List Int) [
+    0, 1, 2, 
+    2, 3, 0]
   
   let colors = [
     (1.0, 0.0, 0.0, 1.0),
+    (0.0, 1.0, 0.0, 1.0),
     (0.0, 1.0, 0.0, 1.0),
     (0.0, 0.0, 1.0, 1.0)
   ]
@@ -85,20 +97,28 @@ createBuffers = do
   glBufferData GL_ARRAY_BUFFER (flatten colors) GL_STATIC_DRAW
   glEnableVertexAttribArray 1
   glVertexAttribPointer 1 4 GL_DOUBLE GL_FALSE 0 0
-
   showError "color buffer "
-  pure $ (vao, buffer, colorBuffer)
+
+  indexBuffer <- glGenBuffers
+  glBindBuffer GL_ELEMENT_ARRAY_BUFFER indexBuffer
+  glBufferDatai GL_ELEMENT_ARRAY_BUFFER indices GL_STATIC_DRAW
+
+  showError "index buffer "
+  pure $ (vao, buffer, colorBuffer, indexBuffer)
 
 
-destroyBuffers : Vao -> Buffer -> Buffer -> IO ()
-destroyBuffers vao buffer colorBuffer = do
+destroyBuffers : Vao -> Buffer -> Buffer -> Buffer -> IO ()
+destroyBuffers vao buffer colorBuffer indexBuffer = do
   glDisableVertexAttribArray 1
   glDisableVertexAttribArray 0
   
   glUnbindBuffer GL_ARRAY_BUFFER
+  glUnbindBuffer GL_ELEMENT_ARRAY_BUFFER
 
+  showError "destroy buffers "
   glDeleteBuffer buffer
   glDeleteBuffer colorBuffer
+  glDeleteBuffer indexBuffer
 
   glUnbindVertexArray
   
@@ -112,7 +132,8 @@ draw win vao = do
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
                    glBindVertexArray vao
-                   glDrawArrays GL_TRIANGLES 0 3
+                   glDrawElements GL_TRIANGLES 6
+                   --glDrawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
                    
                    
@@ -140,11 +161,18 @@ main = do win <- initDisplay "Hello Idris" 640 480
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
           shaders <- createShaders
-          (vao, buffer, colorBuffer) <- createBuffers
+          (vao, buffer, colorBuffer, indexBuffer) <- createBuffers
+          
           texture <- glLoadPNGTexture "logo.png"
+          -- the texture is bound ... so we can set some params
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_REPEAT
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_REPEAT
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST
+          
           eventLoop win vao
           glDeleteTextures [texture]
-          destroyBuffers vao buffer colorBuffer
+          destroyBuffers vao buffer colorBuffer indexBuffer
           destroyShaders shaders
           glfwDestroyWindow win
           glfwTerminate
