@@ -16,14 +16,14 @@ createShaders = do
   glGetError
   vertexShader <- glCreateShader GL_VERTEX_SHADER
   
-  vtx <- readFile "shader.vtx"
+  vtx <- readFile "shader.vert"
   glShaderSource vertexShader vtx
   glCompileShader vertexShader
   printShaderLog vertexShader
 
   fragmentShader <- glCreateShader GL_FRAGMENT_SHADER
 
-  frg <- readFile "shader.frg"
+  frg <- readFile "shader.frag"
   glShaderSource fragmentShader frg 
   glCompileShader fragmentShader  
   printShaderLog fragmentShader
