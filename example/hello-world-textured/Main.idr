@@ -62,10 +62,10 @@ createBuffers = do
     v3 --   v4
   --}
   let vertices = [
-    [   0.8,  0.8, 0.0, 1.0],
-    [  -0.8,  0.8, 0.0, 1.0],
-    [  -0.8, -0.8, 0.0, 1.0],
-    [   0.8, -0.8, 0.0, 1.0]
+    [  -0.6, -0.78, 0.0, 1.0],
+    [   0.6, -0.78, 0.0, 1.0],
+    [   0.6,  0.78, 0.0, 1.0],
+    [  -0.6,  0.78, 0.0, 1.0]
   ]
 
   let indices = the (List Int) [
@@ -73,10 +73,10 @@ createBuffers = do
     2, 3, 0]
   
   let textureCoords = [
-    [1.0, 0.0],
     [0.0, 0.0],
-    [0.0, 1.0],
-    [1.0, 1.0]
+    [1.0, 0.0],
+    [1.0, 1.0],
+    [0.0, 1.0]
   ]
   glGetError
 
@@ -161,7 +161,8 @@ main = do win <- initDisplay "Hello Idris" 800 600
           (vao, buffer, texBuffer, indexBuffer) <- createBuffers
           
           glActiveTexture GL_TEXTURE0 -- load the texture into unit 0
-          texture <- glLoadPNGTexture "bricks_low.png"
+          --texture <- glLoadPNGTexture "bricks_low.png"
+          texture <- glLoadPNGTexture "logo2.png"
           -- the texture is bound ... so we can set some params
           glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_REPEAT
           glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_REPEAT
