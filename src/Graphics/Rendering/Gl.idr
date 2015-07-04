@@ -535,7 +535,6 @@ glLoadPNGTexture : String -> IO Texture
 glLoadPNGTexture filename = do id <- foreign FFI_C "png_texture_load" (String -> IO Int) filename
                                pure $ MkTexture id
 
-
 public 
 glDeleteTextures : List Texture -> IO ()
 glDeleteTextures textures =   
@@ -568,6 +567,15 @@ instance GlEnum TextureTarget Int where
   toGlInt GL_TEXTURE_CUBE_MAP              = 0x8513
   toGlInt GL_TEXTURE_CUBE_MAP_ARRAY        = 0x9009
   toGlInt GL_TEXTURE_RECTANGLE             = 0x84F5
+  
+  
+public 
+glBindTexture : TextureTarget -> Texture -> IO ()
+glBindTexture target (MkTexture id) = foreign FFI_C "glBindTexture" (Int -> Int -> IO ()) (toGlInt target) id
+  	
+public 
+glUnbindTexture : TextureTarget -> IO ()
+glUnbindTexture target = foreign FFI_C "glBindTexture" (Int -> Int -> IO ()) (toGlInt target) 0
 
 public
 data TextureParamName
@@ -629,3 +637,45 @@ glTexParameteri target pname param =
   foreign FFI_C "glTexParameteri" (Int -> Int -> Int -> IO ()) (toGlInt target) (toGlInt pname) (toGlInt param)
 
  
+public 
+data TextureUnit
+  = GL_TEXTURE0
+  | GL_TEXTURE1
+  | GL_TEXTURE2
+  | GL_TEXTURE3
+  | GL_TEXTURE4
+  | GL_TEXTURE5
+  | GL_TEXTURE6
+  | GL_TEXTURE7
+  | GL_TEXTURE8
+  | GL_TEXTURE9
+  | GL_TEXTURE10
+  | GL_TEXTURE11
+  | GL_TEXTURE12
+  -- actually this goes on some more (to 31 on my system), but ist enough for now
+
+instance GlEnum TextureUnit Int where
+  toGlInt GL_TEXTURE0  =                     0x84C0
+  toGlInt GL_TEXTURE1  =                     0x84C1
+  toGlInt GL_TEXTURE2  =                     0x84C2
+  toGlInt GL_TEXTURE3  =                     0x84C3
+  toGlInt GL_TEXTURE4  =                     0x84C4
+  toGlInt GL_TEXTURE5  =                     0x84C5
+  toGlInt GL_TEXTURE6  =                     0x84C6
+  toGlInt GL_TEXTURE7  =                     0x84C7
+  toGlInt GL_TEXTURE8  =                     0x84C8
+  toGlInt GL_TEXTURE9  =                     0x84C9
+  toGlInt GL_TEXTURE10 =                     0x84CA
+  toGlInt GL_TEXTURE11 =                     0x84CB
+  toGlInt GL_TEXTURE12 =                     0x84CC
+ 
+   
+public
+glActiveTexture : TextureUnit -> IO ()
+glActiveTexture unit = foreign FFI_C "glActiveTexture" (Int -> IO ()) (toGlInt unit)
+
+-- ----------------------------------------------------------------- [ Helper ]
+
+public 
+printShaderLog : Shader -> IO ()
+printShaderLog (MkShader id) = foreign FFI_C "printShaderLog" (Int -> IO()) id

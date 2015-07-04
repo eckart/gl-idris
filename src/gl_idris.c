@@ -312,3 +312,29 @@ GLuint png_texture_load(const char * file_name)
     printf("texture loaded %s - texture id %d\n", file_name, texture);
     return texture;
 }
+
+
+void printShaderLog(int shaderId) {
+  GLuint id = (GLuint) shaderId;
+    GLint result;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result );
+    if( GL_FALSE == result ) {
+       fprintf( stderr, "Shader compilation failed!\n" );
+
+       GLint logLen;
+       glGetShaderiv(id, GL_INFO_LOG_LENGTH, &logLen );
+
+       if (logLen > 0) {
+           char * log = (char *)malloc(logLen);
+
+           GLsizei written;
+           glGetShaderInfoLog(id, logLen, &written, log);
+
+           fprintf(stderr, "Shader log: \n%s", log);
+
+           free(log);
+       }
+    } else {
+      printf("shader sucessfully compiled\n");
+    }
+}

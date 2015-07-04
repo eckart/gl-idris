@@ -33,6 +33,7 @@ void idr_main_loop();
 
 int idr_init_glew();
 
+void printShaderLog(int shaderId);
 
 
 #endif
