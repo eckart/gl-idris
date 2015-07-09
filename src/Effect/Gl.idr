@@ -109,6 +109,8 @@ createColoredModel : (vertices: (Vect n Vertex))
            -> { [GL_ON] } Eff Model
 createColoredModel vs cs vsh frsh u mode = call $ WithGl (\_ => createColoredModel' vs cs vsh frsh u mode)
 
+getProgram : Model -> Program
+getProgram (ColoredModel _ _ _ _ (MkShaders _ _ program) _) = program
 
 renderModel' : Model -> IO ()
 renderModel' (ColoredModel vao n _ _ (MkShaders _ _ program) mode) =

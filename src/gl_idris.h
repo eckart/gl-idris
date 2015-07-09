@@ -27,6 +27,8 @@ void idr_set_int(void* buf, int idx, double val);
 
 void idr_glShaderSource(int id, void* source);
 
+void idr_glUniformMatrix4fv(int location, void* buffer);
+
 GLuint png_texture_load(const char * file_name);
 
 void idr_main_loop();

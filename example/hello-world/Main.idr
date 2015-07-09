@@ -1,9 +1,12 @@
 module Main
 
-
+import Control.Algebra
+import Data.Matrix.Transformation
+import Data.Matrix
 import Graphics.Rendering.Gl
 import Graphics.Util.Glfw
 import Graphics.Rendering.Config
+import Data.Floats
 
 %include C "GL/glew.h"
 
@@ -38,9 +41,20 @@ createShaders = do
   showError "attach shaders "
   
   glLinkProgram program
+  showError "link "
   glUseProgram program
-  showError "link and use "
+  showError "use "
 
+  printShaderLog vertexShader
+  printShaderLog fragmentShader
+
+  locView <- glGetUniformLocation program "viewMatrix"
+  glUniformMatrix4fv locView defaultViewMatrix
+
+  locProj <- glGetUniformLocation program "projectionMatrix"
+  let projM = perspectiveProjection (Degree 45) (640 / 480) (1.0, 100.0)
+  glUniformMatrix4fv locProj $ projM
+  
   pure (vertexShader, fragmentShader, program)
   
 
@@ -56,19 +70,22 @@ destroyShaders (shader1, shader2, program) = do
   showError "delete shaders "
   pure ()
 
-createBuffers : IO (Vao, Buffer, Buffer)
-createBuffers = do
-  let vertices = [
+vertices : List (Double, Double, Double, Double)
+vertices = [
     ( -0.8, -0.8, 0.0, 1.0),
     (  0.0,  0.8, 0.0, 1.0),
     (  0.8, -0.8, 0.0, 1.0)
   ]
   
-  let colors = [
+colors : List (Double, Double, Double, Double)
+colors = [
     (1.0, 0.0, 0.0, 1.0),
     (0.0, 1.0, 0.0, 1.0),
     (0.0, 0.0, 1.0, 1.0)
   ]
+
+createBuffers : IO (Vao, Buffer, Buffer)
+createBuffers = do
   glGetError
 
   vao <- glGenVertexArrays
@@ -106,12 +123,20 @@ destroyBuffers vao buffer colorBuffer = do
 
   showError "destroy buffers "
 
-draw : GlfwWindow -> Vao -> IO ()
-draw win vao = do 
+data State = MkState GlfwWindow Vao Program Double Double
+
+draw : State -> IO ()
+draw (MkState win vao prog distance rotation) = do 
                    glClearColor 0 0 0 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
                    glBindVertexArray vao
+                   glUseProgram prog
+
+                   --putStrLn $ "Drawing at " ++ (show distance) ++ " / " ++ (show rotation)
+                   loc <- glGetUniformLocation prog "transformMatrix"
+                   glUniformMatrix4fv loc $ (translate [0,0, distance]) <> (rotateZ (Degree rotation))
+
                    glDrawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
                    
@@ -139,22 +164,23 @@ main = do win <- initDisplay "Hello Idris" 640 480
           --win <- createWindow "Hello World" 640 480 
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
-          shaders <- createShaders
+          (vertexShader, fragmentShader, prog) <- createShaders
           (vao, buffer, colorBuffer) <- createBuffers
-          eventLoop win vao
+          eventLoop $ MkState win vao prog (-1.0) 0.0
+          printShaderLog vertexShader
           destroyBuffers vao buffer colorBuffer
-          destroyShaders shaders
+          destroyShaders (vertexShader, fragmentShader, prog)
           glfwDestroyWindow win
           glfwTerminate
           pure ()
        where 
-         eventLoop : GlfwWindow -> Vao -> IO ()
-         eventLoop win vao = do
-                      draw win vao
+         eventLoop : State -> IO ()
+         eventLoop state@(MkState win vao prog distance rotation) = do
+                      draw state 
                       glfwPollEvents
                       key <- glfwGetKey win GLFW_KEY_ESCAPE
                       shouldClose <- glfwWindowShouldClose win
                       if shouldClose || key == GLFW_PRESS
                       then pure ()
-                      else eventLoop win vao
-                              
+                      else eventLoop $ MkState win vao prog (distance - 0.001) (rotation + 0.1)
+                      --else pure ()

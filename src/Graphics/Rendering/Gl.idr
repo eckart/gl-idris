@@ -1,5 +1,7 @@
 module Graphics.Rendering.Gl
 
+import Data.Matrix.Transformation as T
+
 %include C "GL/glew.h"
 %include C "GLFW/glfw3.h"
 %include C "gl_idris.h"
@@ -86,7 +88,7 @@ glGetInfo : IO String
 glGetInfo = do vendor   <- glGetString GL_VENDOR
                renderer <- glGetString GL_RENDERER
                version  <- glGetString GL_VERSION
-               return $ foldl1 (++) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"]
+               return $ foldl1 (++) (the (List String) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"])
 
 public             
 data GlCapability
@@ -469,6 +471,21 @@ glUseProgram : Program -> IO ()
 glUseProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
 glUseProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
 
+-- ----------------------------------------------------------------- [ Uniforms ]
+
+
+public 
+glGetUniformLocation : Program -> String -> IO Int
+glGetUniformLocation (MkProgram id) attr = foreign FFI_C "glGetUniformLocation" (Int -> String -> IO Int) id attr
+
+public
+glUniformMatrix4fv : (location: Int) -> TransformationMatrix -> IO ()
+glUniformMatrix4fv location mat = 
+  do ptr <- writeBuffer $ toList $ T.toGl mat
+     foreign FFI_C "idr_glUniformMatrix4fv" (Int -> Ptr -> IO ()) location ptr
+     free ptr 
+
+
 {--
 public 
 getShaderiv : 
@@ -481,8 +498,7 @@ char buffer[512];
 glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
 
 --}
--- ------------------------------------------------------------------------
--- drawing
+-- ----------------------------------------------------------------- [ Drawing ]
     
 public
 data DrawingMode

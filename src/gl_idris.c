@@ -132,6 +132,20 @@ void idr_glShaderSource(int id, void* source) {
   glShaderSource(id, 1, &s, NULL);		    
 }
 
+void idr_glUniformMatrix4fv(int location, void* buffer) {
+  GLuint loc = (GLuint) location;
+  double* buff = (double*) buffer;
+  
+  float* mat = malloc(16*sizeof(float));
+  for (int i = 0; i < 16; i++) {
+    mat[i] = buff[i];
+  }
+
+  glUniformMatrix4fv(loc, 1, GL_FALSE, mat);
+  free(mat);
+}
+
+
 // only for testing!
 void idr_main_loop(void* win) {
   GLFWwindow* window = (GLFWwindow*) win;

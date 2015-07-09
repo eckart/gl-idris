@@ -1,8 +1,8 @@
 package gl
 
 sourcedir = src
-modules = Graphics.Rendering.Gl, Graphics.Rendering.Config, Graphics.Util.Glfw, Effect.Glfw, Effect.Gl
-opts = "-p effects" 
+modules = Graphics.Rendering.Gl, Graphics.Rendering.Config, Graphics.Util.Glfw, Effect.Glfw, Effect.Gl, Data.Matrix.Transformation
+opts = "-p effects -p contrib" 
 
 makefile = MakefileGl
 
