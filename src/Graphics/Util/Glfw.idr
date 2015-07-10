@@ -397,8 +397,12 @@ glfwSetInputMode : GlfwWindow -> GlfwFlags -> Int -> IO ()
 glfwSetInputMode (Win ptr) flag val = foreign FFI_C "glfwSetInputMode" (Ptr -> Int -> Int -> IO ()) ptr (toInt flag) val
 
 public 
-glfwGetKey : GlfwWindow -> FunctionKey -> IO KeyEventTy
-glfwGetKey (Win ptr) k = do e <- foreign FFI_C "glfwGetKey" (Ptr -> Int -> IO Int) ptr (toInt k)
+glfwGetFunctionKey : GlfwWindow -> FunctionKey -> IO KeyEventTy
+glfwGetFunctionKey (Win ptr) k = do e <- foreign FFI_C "glfwGetKey" (Ptr -> Int -> IO Int) ptr (toInt k)
+                                    pure $ fromInt e
+public 
+glfwGetKey : GlfwWindow -> Char -> IO KeyEventTy
+glfwGetKey (Win ptr) k = do e <- foreign FFI_C "glfwGetKey" (Ptr -> Int -> IO Int) ptr (ord $ toUpper k)
                             pure $ fromInt e
                         
 public 

@@ -53,31 +53,37 @@ destroyShaders (shader1, shader2, program) = do
   showError "delete shaders "
   pure ()
 
-createBuffers : IO (Vao, Buffer, Buffer, Buffer)
-createBuffers = do
   {--
     v2 ---  v1
     |    /  |
     |   /   |
     v3 --   v4
   --}
-  let vertices = [
+vertices : List (List Double)
+vertices = [
     [  -0.6, -0.78, 0.0, 1.0],
     [   0.6, -0.78, 0.0, 1.0],
     [   0.6,  0.78, 0.0, 1.0],
     [  -0.6,  0.78, 0.0, 1.0]
   ]
 
-  let indices = the (List Int) [
+indices : List Int
+indices = [
     0, 1, 2, 
     2, 3, 0]
   
-  let textureCoords = [
+textureCoords : List (List Double)
+textureCoords = [
     [0.0, 0.0],
     [1.0, 0.0],
     [1.0, 1.0],
     [0.0, 1.0]
   ]
+
+createBuffers : IO (Vao, Buffer, Buffer, Buffer)
+createBuffers = do 
+  putStrLn "test"
+  
   glGetError
 
   vao <- glGenVertexArrays
@@ -142,8 +148,6 @@ initDisplay title width height = do
   glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT  1
   glfwWindowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
   win <- glfwCreateWindow title width height defaultMonitor
-  -- TODO: test for failure - for now we pretend every thing is going to be ok
-  -- terminate 
   glfwMakeContextCurrent win
   glewInit
   info <- glGetInfo
@@ -154,20 +158,18 @@ initDisplay title width height = do
 
 main : IO ()
 main = do win <- initDisplay "Hello Idris" 800 600
-          --win <- createWindow "Hello World" 640 480 
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
           shaders <- createShaders
           (vao, buffer, texBuffer, indexBuffer) <- createBuffers
           
           glActiveTexture GL_TEXTURE0 -- load the texture into unit 0
-          --texture <- glLoadPNGTexture "bricks_low.png"
           texture <- glLoadPNGTexture "logo2.png"
           -- the texture is bound ... so we can set some params
           glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_REPEAT
           glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_REPEAT
-          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_NEAREST
-          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_NEAREST
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR
+          glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR
           
           eventLoop win vao
           glDeleteTextures [texture]
@@ -181,7 +183,7 @@ main = do win <- initDisplay "Hello Idris" 800 600
          eventLoop win vao = do
                       draw win vao
                       glfwPollEvents
-                      key <- glfwGetKey win GLFW_KEY_ESCAPE
+                      key <- glfwGetFunctionKey win GLFW_KEY_ESCAPE
                       shouldClose <- glfwWindowShouldClose win
                       if shouldClose || key == GLFW_PRESS
                       then pure ()

@@ -75,7 +75,7 @@ emain = do putStrLn "Initialising"
           eventLoop models = do draw models
                                 pollEvents
                                 swapBuffers
-                                ev <- getKey GLFW_KEY_ESCAPE
+                                ev <- getFunctionKey GLFW_KEY_ESCAPE
                                 closeClicked <- shouldClose
                                 if closeClicked || ev == GLFW_PRESS
                                 then pure ()

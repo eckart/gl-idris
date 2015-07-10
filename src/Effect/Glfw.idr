@@ -81,7 +81,10 @@ makeContextCurrent = call $ WithWindow (\win => glfwMakeContextCurrent win)
 swapBuffers : { [GLFW_WINDOW_ON] } Eff ()
 swapBuffers = call $ WithWindow (\win => glfwSwapBuffers win)
 
-getKey : FunctionKey -> { [GLFW_WINDOW_ON] } Eff KeyEventTy
+getFunctionKey : FunctionKey -> { [GLFW_WINDOW_ON] } Eff KeyEventTy
+getFunctionKey key = call $ WithWindow (\win => glfwGetFunctionKey win key)
+
+getKey : Char -> { [GLFW_WINDOW_ON] } Eff KeyEventTy
 getKey key = call $ WithWindow (\win => glfwGetKey win key)
 
 initGlew : { [GLFW_WINDOW_ON] } Eff ()
