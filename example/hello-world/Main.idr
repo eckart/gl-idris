@@ -123,10 +123,10 @@ destroyBuffers vao buffer colorBuffer = do
 
   showError "destroy buffers "
 
-data State = MkState GlfwWindow Vao Program Double Double
+data State = MkState GlfwWindow Vao Program (Double, Double) Double
 
 draw : State -> IO ()
-draw (MkState win vao prog distance rotation) = do 
+draw (MkState win vao prog (z, x) rotation) = do 
                    glClearColor 0 0 0 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
@@ -135,7 +135,7 @@ draw (MkState win vao prog distance rotation) = do
 
                    --putStrLn $ "Drawing at " ++ (show distance) ++ " / " ++ (show rotation)
                    loc <- glGetUniformLocation prog "transformMatrix"
-                   glUniformMatrix4fv loc $ (translate [0,0, distance]) <> (rotateZ (Degree rotation))
+                   glUniformMatrix4fv loc $ (translate [x, 0, z]) <> (rotateZ (Degree rotation))
 
                    glDrawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
@@ -149,8 +149,7 @@ initDisplay title width height = do
   glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT  1
   glfwWindowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
   win <- glfwCreateWindow title width height defaultMonitor
-  -- TODO: test for failure - for now we pretend every thing is going to be ok
-  -- terminate 
+  -- now we pretend every thing is going to be ok
   glfwMakeContextCurrent win
   glewInit
   info <- glGetInfo
@@ -159,14 +158,32 @@ initDisplay title width height = do
   glDepthFunc GL_LESS
   return win
 
+isKeyPressed : GlfwWindow -> Char -> IO Bool
+isKeyPressed win key = do 
+  ev <- glfwGetKey win key 
+  if ev == GLFW_PRESS
+  then return True
+  else return False
+
+updateState :State -> IO State
+updateState (MkState win vao prog (z, x) rotation) = do
+  w <- isKeyPressed win 'W'
+  s <- isKeyPressed win 'S'
+  let z' = if w then z - 0.002 else z
+  let z'' = if s then z' + 0.002 else z'
+  left  <- isKeyPressed win 'A'
+  right <- isKeyPressed win 'D'
+  let x' = if left then x - 0.002 else x
+  let x'' = if right then x' + 0.002 else x'
+  return $ MkState win vao prog (z'', x'') (rotation + 0.2)
+
 main : IO ()
 main = do win <- initDisplay "Hello Idris" 640 480
-          --win <- createWindow "Hello World" 640 480 
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
           (vertexShader, fragmentShader, prog) <- createShaders
           (vao, buffer, colorBuffer) <- createBuffers
-          eventLoop $ MkState win vao prog (-1.0) 0.0
+          eventLoop $ MkState win vao prog (-1.0, 0.0) 0.0
           printShaderLog vertexShader
           destroyBuffers vao buffer colorBuffer
           destroyShaders (vertexShader, fragmentShader, prog)
@@ -178,9 +195,10 @@ main = do win <- initDisplay "Hello Idris" 640 480
          eventLoop state@(MkState win vao prog distance rotation) = do
                       draw state 
                       glfwPollEvents
-                      key <- glfwGetKey win GLFW_KEY_ESCAPE
+                      key <- glfwGetFunctionKey win GLFW_KEY_ESCAPE
                       shouldClose <- glfwWindowShouldClose win
                       if shouldClose || key == GLFW_PRESS
                       then pure ()
-                      else eventLoop $ MkState win vao prog (distance - 0.001) (rotation + 0.1)
-                      --else pure ()
+                      else do 
+                        state' <- updateState state
+                        eventLoop state'

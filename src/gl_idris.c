@@ -19,6 +19,19 @@ void idr_set_double(void* buf, int idx, double val) {
   buffer[idx] = val;
 }
 
+
+void* idr_allocate_floats(int len) {
+  double* buf = malloc(len*sizeof(float));
+  return (void*) buf;
+}
+
+void idr_set_float(void* buf, int idx, double val) {
+  float* buffer = (float*) buf;
+  float f = val;
+  buffer[idx] = f;
+}
+
+
 int idr_sizeof_ints(int len) {
   return len * sizeof(int);
 }
@@ -143,6 +156,12 @@ void idr_glUniformMatrix4fv(int location, void* buffer) {
 
   glUniformMatrix4fv(loc, 1, GL_FALSE, mat);
   free(mat);
+}
+
+void idr_glUniform3fv(int location, void* buffer) {
+  GLuint loc = (GLuint) location;
+  float* buff = (float*) buffer;
+  glUniform3fv(loc, 1, buff);
 }
 
 

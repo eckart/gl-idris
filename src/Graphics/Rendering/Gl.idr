@@ -9,6 +9,10 @@ import Data.Matrix.Transformation as T
 
 %access private
 
+public
+Vec3 : Type
+Vec3 = Vect 3 Double
+
 -- --------------------------------------------------------------
 
 writeBuffer : List Double -> IO Ptr
@@ -19,6 +23,16 @@ writeBuffer ds =
   where writeBuffer' : Ptr -> Nat -> List Double -> IO ()
         writeBuffer' ptr i []        = pure ()
         writeBuffer' ptr i (d :: ds) = do foreign FFI_C "idr_set_double" (Ptr -> Int -> Double -> IO()) ptr (toIntNat i) d
+                                          writeBuffer' ptr (S i) ds
+
+writeFloatBuffer : List Double -> IO Ptr
+writeFloatBuffer ds = 
+  do ptr <- foreign FFI_C "idr_allocate_floats" (Int -> IO Ptr) (toIntNat (length ds))
+     writeBuffer' ptr Z ds
+     pure ptr
+  where writeBuffer' : Ptr -> Nat -> List Double -> IO ()
+        writeBuffer' ptr i []        = pure ()
+        writeBuffer' ptr i (d :: ds) = do foreign FFI_C "idr_set_float" (Ptr -> Int -> Double -> IO()) ptr (toIntNat i) d
                                           writeBuffer' ptr (S i) ds
 
 writeIntBuffer : List Int -> IO Ptr
@@ -429,6 +443,12 @@ glDeleteShader : Shader -> IO ()
 glDeleteShader (MkShader id) = foreign FFI_C "glDeleteShader" (Int -> IO ()) id
                       
 public    
+glDeleteShaders : List Shader -> IO ()
+glDeleteShaders []        = pure ()
+glDeleteShaders (s :: ss) = glDeleteShader s
+
+                      
+public    
 glShaderSource : Shader -> String -> IO ()
 glShaderSource (MkShader id) source = foreign FFI_C "idr_glShaderSource" (Int -> String -> IO ()) id source
 
@@ -467,6 +487,12 @@ glDetachShader (MkProgram programId) (MkShader shaderId) =
   foreign FFI_C "glDetachShader" (Int -> Int -> IO()) programId shaderId                   
 
 public    
+glDetachShaders : Program -> List Shader -> IO ()
+glDetachShaders program []      = pure ()
+glDetachShaders program (s::ss) = glDetachShader program s
+
+
+public    
 glUseProgram : Program -> IO ()
 glUseProgram (MkProgram id ) = foreign FFI_C "glUseProgram" (Int -> IO()) id
 glUseProgram NoProgram = foreign FFI_C "glUseProgram" (Int -> IO()) 0
@@ -485,6 +511,12 @@ glUniformMatrix4fv location mat =
      foreign FFI_C "idr_glUniformMatrix4fv" (Int -> Ptr -> IO ()) location ptr
      free ptr 
 
+public 
+glUniform3fv : (location: Int) -> Vec3 -> IO ()
+glUniform3fv location vec = 
+  do ptr <- writeFloatBuffer $ toList vec
+     foreign FFI_C "idr_glUniform3fv" (Int -> Ptr -> IO ()) location ptr
+     free ptr 
 
 {--
 public 

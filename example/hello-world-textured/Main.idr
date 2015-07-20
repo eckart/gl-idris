@@ -1,17 +1,36 @@
 module Main
 
+import Control.Algebra
+import Data.Matrix.Transformation as T
+import Data.Matrix
 
 import Graphics.Rendering.Gl
 import Graphics.Util.Glfw
 import Graphics.Rendering.Config
+import ObjLoader
 
 %include C "GL/glew.h"
+
+
+Position: Type
+Position = Vect 3 Double
+
+Color: Type
+Color = Vect 3 Double
 
 showError : String -> IO ()
 showError msg = do err <- glGetError
                    putStrLn $ msg ++ (show err)
+                   
+record Shaders where
+  constructor MkShaders
+  program: Program
+  shaderIds: List Shader
+  transformationMatrix: Int
+  lightPosition : Int
+  lightColor: Int
 
-createShaders : IO (Shader, Shader, Program)
+createShaders : IO Shaders
 createShaders = do
   glGetError
   vertexShader <- glCreateShader GL_VERTEX_SHADER
@@ -38,80 +57,94 @@ createShaders = do
   printShaderLog vertexShader
   printShaderLog fragmentShader
 
-  pure (vertexShader, fragmentShader, program)
+  locView <- glGetUniformLocation program "viewMatrix"
+  glUniformMatrix4fv locView defaultViewMatrix
+
+  locProj <- glGetUniformLocation program "projectionMatrix"
+  let projM = perspectiveProjection (Degree 45) (800 / 600) (1.0, 100.0)
+  glUniformMatrix4fv locProj $ projM
+
+  loc <- glGetUniformLocation program "transformMatrix"
+
+  locLightPos <- glGetUniformLocation program "lightPosition"
+  locLightColor <- glGetUniformLocation program "lightColor"
+
+  pure $ MkShaders program [fragmentShader, vertexShader] loc locLightPos locLightColor
   
 
-destroyShaders : (Shader, Shader, Program) -> IO ()
-destroyShaders (shader1, shader2, program) = do
+destroyShaders : Shaders -> IO ()
+destroyShaders shaders = do
   glGetError
   glUseProgram noProgram
-  glDetachShader program shader1
-  glDetachShader program shader2
-  glDeleteShader shader1
-  glDeleteShader shader2
-  glDeleteProgram program
+  glDetachShaders (program shaders) (shaderIds shaders)
+  glDeleteShaders (shaderIds shaders)
+  glDeleteProgram (program shaders)
   showError "delete shaders "
   pure ()
-
-  {--
-    v2 ---  v1
-    |    /  |
-    |   /   |
-    v3 --   v4
-  --}
-vertices : List (List Double)
-vertices = [
-    [  -0.6, -0.78, 0.0, 1.0],
-    [   0.6, -0.78, 0.0, 1.0],
-    [   0.6,  0.78, 0.0, 1.0],
-    [  -0.6,  0.78, 0.0, 1.0]
-  ]
-
-indices : List Int
-indices = [
-    0, 1, 2, 
-    2, 3, 0]
   
-textureCoords : List (List Double)
-textureCoords = [
-    [0.0, 0.0],
-    [1.0, 0.0],
-    [1.0, 1.0],
-    [0.0, 1.0]
-  ]
+record Light where
+  constructor MkLight
+  position: Position
+  color: Color
 
-createBuffers : IO (Vao, Buffer, Buffer, Buffer)
-createBuffers = do 
-  putStrLn "test"
+record Model where
+  constructor MkModel
+  vao : Vao
+  positions : Buffer 
+  uvs : Buffer 
+  normals : Buffer
+  indices : Buffer
+  numIndices : Int
+
+
+toList' : List (Vect m a) -> List a
+toList' xs = flatten $ map toList xs
+
+createBuffers : String -> IO Model
+createBuffers filename = do 
+  putStrLn $ "loading " ++ (show filename)
+  
+  (MkObjModel pos uvs norm ind) <- loadObj filename
+  --putStrLn $ "positions " ++ (show pos)
+  --putStrLn $ "uvs " ++ (show uvs)
+  --putStrLn $ "normals " ++ (show norm)
+  --putStrLn $ "indices " ++ (show ind)
   
   glGetError
 
   vao <- glGenVertexArrays
   glBindVertexArray vao
-  buffer <- glGenBuffers
-  glBindBuffer GL_ARRAY_BUFFER buffer
-  glBufferData GL_ARRAY_BUFFER (flatten vertices) GL_STATIC_DRAW
-  showError "vertex buffer data "
-  glEnableVertexAttribArray 0
-  glVertexAttribPointer 0 4 GL_DOUBLE GL_FALSE 0 0
 
-  texBuffer <- glGenBuffers
-  glBindBuffer GL_ARRAY_BUFFER texBuffer
-  glBufferData GL_ARRAY_BUFFER (flatten textureCoords) GL_STATIC_DRAW
+  positionBuffer <- glGenBuffers
+  glBindBuffer GL_ARRAY_BUFFER positionBuffer
+  glBufferData GL_ARRAY_BUFFER (toList' pos) GL_STATIC_DRAW
+  glEnableVertexAttribArray 0
+  glVertexAttribPointer 0 3 GL_DOUBLE GL_FALSE 0 0
+
+  uvBuffer <- glGenBuffers
+  glBindBuffer GL_ARRAY_BUFFER uvBuffer
+  glBufferData GL_ARRAY_BUFFER (toList' uvs) GL_STATIC_DRAW
   glEnableVertexAttribArray 1
   glVertexAttribPointer 1 2 GL_DOUBLE GL_FALSE 0 0
-  showError "texture coords buffer "
+
+  normalBuffer <- glGenBuffers
+  glBindBuffer GL_ARRAY_BUFFER normalBuffer
+  glBufferData GL_ARRAY_BUFFER (toList' norm) GL_STATIC_DRAW
+  glEnableVertexAttribArray 2
+  glVertexAttribPointer 2 3 GL_DOUBLE GL_FALSE 0 0
 
   indexBuffer <- glGenBuffers
   glBindBuffer GL_ELEMENT_ARRAY_BUFFER indexBuffer
-  glBufferDatai GL_ELEMENT_ARRAY_BUFFER indices GL_STATIC_DRAW
+  glBufferDatai GL_ELEMENT_ARRAY_BUFFER ind GL_STATIC_DRAW
 
-  showError "index buffer "
-  pure $ (vao, buffer, texBuffer, indexBuffer)
+  showError "buffers "
+  pure $ MkModel vao positionBuffer uvBuffer normalBuffer indexBuffer (toIntNat $ length ind)
 
 
-destroyBuffers : Vao -> Buffer -> Buffer -> Buffer -> IO ()
-destroyBuffers vao buffer texBuffer indexBuffer = do
+destroyBuffers : Model -> IO ()
+destroyBuffers model = do
+  showError "destroy buffers "
+  glDisableVertexAttribArray 2
   glDisableVertexAttribArray 1
   glDisableVertexAttribArray 0
   
@@ -119,26 +152,34 @@ destroyBuffers vao buffer texBuffer indexBuffer = do
   glUnbindBuffer GL_ELEMENT_ARRAY_BUFFER
 
   showError "destroy buffers "
-  glDeleteBuffer buffer
-  glDeleteBuffer texBuffer
-  glDeleteBuffer indexBuffer
+  glDeleteBuffer $ positions model
+  glDeleteBuffer $ uvs model
+  glDeleteBuffer $ normals model
+  glDeleteBuffer $ indices model
 
   glUnbindVertexArray
   
-  glDeleteVertexArray vao
+  glDeleteVertexArray $ vao model
 
   showError "destroy buffers "
 
-draw : GlfwWindow -> Vao -> IO ()
-draw win vao = do 
-                   glClearColor 1 1 1 1
+draw : GlfwWindow -> Model -> Vect 3 Double -> Shaders -> Light -> IO ()
+draw win model rotation shaders light = do 
+                   glClearColor 0.2 0.2 0.2 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
-                   glBindVertexArray vao
-                   glDrawElements GL_TRIANGLES 6
-                   --glDrawArrays GL_TRIANGLES 0 3
-                   glfwSwapBuffers win
                    
+                   let loc = transformationMatrix shaders
+                   glUniformMatrix4fv loc $ (translate [0, 0, -5]) <> (rotate $ map Degree rotation)
+
+                   let locLightPos = lightPosition shaders
+                   glUniform3fv locLightPos (position light)
+                   let locLightCol = lightColor shaders
+                   glUniform3fv locLightCol (color light)
+
+                   glBindVertexArray $ vao model
+                   glDrawElements GL_TRIANGLES $ numIndices model
+                   glfwSwapBuffers win
                    
 initDisplay : String -> Int -> Int -> IO GlfwWindow
 initDisplay title width height = do
@@ -161,7 +202,7 @@ main = do win <- initDisplay "Hello Idris" 800 600
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
           shaders <- createShaders
-          (vao, buffer, texBuffer, indexBuffer) <- createBuffers
+          model <- createBuffers "cube.obj"
           
           glActiveTexture GL_TEXTURE0 -- load the texture into unit 0
           texture <- glLoadPNGTexture "logo2.png"
@@ -171,21 +212,25 @@ main = do win <- initDisplay "Hello Idris" 800 600
           glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR
           glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR
           
-          eventLoop win vao
+          let light = MkLight [0,0,1] [1,1,1] 
+          
+          eventLoop win model [0,0,0] shaders light
           glDeleteTextures [texture]
-          destroyBuffers vao buffer texBuffer indexBuffer
+          destroyBuffers model
           destroyShaders shaders
           glfwDestroyWindow win
           glfwTerminate
           pure ()
        where 
-         eventLoop : GlfwWindow -> Vao -> IO ()
-         eventLoop win vao = do
-                      draw win vao
+         eventLoop : GlfwWindow -> Model -> Vect 3 Double -> Shaders -> Light -> IO ()
+         eventLoop win model rotation shaders light = do
+                      draw win model rotation shaders light
+                      let newRotation = Data.Matrix.Transformation.(+) rotation [0.025, 0.025, 0]
                       glfwPollEvents
                       key <- glfwGetFunctionKey win GLFW_KEY_ESCAPE
                       shouldClose <- glfwWindowShouldClose win
                       if shouldClose || key == GLFW_PRESS
                       then pure ()
-                      else eventLoop win vao
+                      else eventLoop win model newRotation shaders light
                               
+ 

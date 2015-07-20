@@ -24,11 +24,9 @@ getRadians (Radians a) = a
 getRadians (Degree a)  = a * pi / 180
 
 
-private
 (+): Num a => (Vect n a) -> (Vect n a) -> (Vect n a) 
 (+) v1 v2 = zipWith (+) v1 v2
 
-private
 (-): Num a => (Vect n a) -> (Vect n a) -> (Vect n a) 
 (-) v1 v2 = zipWith (-) v1 v2
 
@@ -106,6 +104,9 @@ rotateZ angle = [
            [       0 ,       0,  0,  1]
            ]
            where a = getRadians angle
+
+rotate : Vect 3 Angle -> TransformationMatrix
+rotate (ax :: ay :: az :: []) = (rotateX ax) <> (rotateY ay) <> (rotateZ az)
 
 -- ----------------------------------------------------------------- [ Projection Matrices ]
 

@@ -21,6 +21,9 @@ int idr_sizeof_doubles(int len);
 void* idr_allocate_doubles(int len);
 void idr_set_double(void* buf, int idx, double val);
 
+void* idr_allocate_floats(int len);
+void idr_set_float(void* buf, int idx, double val);
+
 int idr_sizeof_ints(int len);
 void* idr_allocate_ints(int len);
 void idr_set_int(void* buf, int idx, double val);
@@ -28,6 +31,7 @@ void idr_set_int(void* buf, int idx, double val);
 void idr_glShaderSource(int id, void* source);
 
 void idr_glUniformMatrix4fv(int location, void* buffer);
+void idr_glUniform3fv(int location, void* buffer);
 
 GLuint png_texture_load(const char * file_name);
 
