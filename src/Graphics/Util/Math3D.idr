@@ -1,4 +1,4 @@
-module Data.Matrix.Transformation
+module Graphics.Util.Math3D
 
 import Data.Matrix
 import Data.Floats

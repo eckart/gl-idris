@@ -1,13 +1,13 @@
 module Main
 
 import Control.Algebra
-import Data.Matrix.Transformation as T
+import Graphics.Util.Math3D as T
 import Data.Matrix
 
 import Graphics.Rendering.Gl
 import Graphics.Util.Glfw
 import Graphics.Rendering.Config
-import ObjLoader
+import Graphics.Util.ObjLoader
 
 %include C "GL/glew.h"
 
@@ -225,7 +225,7 @@ main = do win <- initDisplay "Hello Idris" 800 600
          eventLoop : GlfwWindow -> Model -> Vect 3 Double -> Shaders -> Light -> IO ()
          eventLoop win model rotation shaders light = do
                       draw win model rotation shaders light
-                      let newRotation = Data.Matrix.Transformation.(+) rotation [0.025, 0.025, 0]
+                      let newRotation = Graphics.Util.Math3D.(+) rotation [0.025, 0.025, 0]
                       glfwPollEvents
                       key <- glfwGetFunctionKey win GLFW_KEY_ESCAPE
                       shouldClose <- glfwWindowShouldClose win

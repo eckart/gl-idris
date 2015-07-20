@@ -1,11 +1,11 @@
 module Main
 
 import Control.Algebra
-import Data.Matrix.Transformation
 import Data.Matrix
 import Graphics.Rendering.Gl
 import Graphics.Util.Glfw
 import Graphics.Rendering.Config
+import Graphics.Util.Math3D
 import Data.Floats
 
 %include C "GL/glew.h"

@@ -1,4 +1,4 @@
-module ObjLoader
+module Graphics.Util.ObjLoader
 
 import Control.Monad.Identity
 

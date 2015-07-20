@@ -1,6 +1,6 @@
 module Graphics.Rendering.Gl
 
-import Data.Matrix.Transformation as T
+import Graphics.Util.Math3D as T
 
 %include C "GL/glew.h"
 %include C "GLFW/glfw3.h"
