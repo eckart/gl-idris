@@ -34,7 +34,7 @@ data ObjModel : Type where
           -> List Int             -- indices
           -> ObjModel
 
-
+abstract
 data ObjLine
   = Position Vertex
   | TextureCoord UV
@@ -201,43 +201,29 @@ processFace (f::faces)  p n t cnt indices vData buffer = case (lookup f indices)
     Nothing => processFace faces p n t cnt indices vData buffer -- ignore face: should not be possible
 
 
-public
-loadObj : (filename: String) -> IO ObjModel
-loadObj fname = do content <- readFile fname -- works only for small files
-                   let objLines = (lines content) >>= parseLine
-                   let (positions, normals, uvs, indices) = processLines objLines
+computeModel : List ObjLine -> ObjModel
+computeModel objLines = 
+  let 
+    (positions, normals, uvs, indices) = processLines objLines
+    mappedPositions  = mapByIndex positions  -- Map Int Vertex
+    mappedNormals    = mapByIndex normals    -- Map Int Vertex
+    mappedUvs        = mapByIndex uvs        -- Map Int UV
+    positionIndices = reverse $ map fst indices
+    (posn, vData) = processFace indices mappedPositions mappedNormals mappedUvs 0 M.empty M.empty []
+  in MkObjModel (map position vData) (map uv vData) (map normal vData) posn
 
-                   let mappedPositions  = mapByIndex positions  -- Map Int Vertex
-                   let mappedNormals    = mapByIndex normals    -- Map Int Vertex
-                   let mappedUvs        = mapByIndex uvs        -- Map Int UV
-                   
-                   let positionIndices = reverse $ map fst indices
-                   
-                   --putStrLn $ "#pos "  ++ (show $ M.toList mappedPositions)
-                   --putStrLn $ "#norm " ++ (show $ length normals)
-                   --putStrLn $ "#uvs "  ++ (show $ length uvs)
-                   --putStrLn $ "#indices "  ++ (show $ length positionIndices)
-                   
-                   let (posn, vData) = processFace indices mappedPositions mappedNormals mappedUvs 0 M.empty M.empty []
-
-                   putStrLn $ "#pos "  ++ (show $ length posn)
-                   putStrLn $ "#vData " ++ (show $ length vData)
-                   --putStrLn $ "#uvs "  ++ (show $ length uvs)
-                   --putStrLn $ "#indices "  ++ (show $ length positionIndices)
-                   
-                   
-                   pure $ MkObjModel (map position vData) (map uv vData) (map normal vData) posn
-                   
-
-{--
 public 
-main : IO ()
-main = do putStrLn "Loading "
-          --test faceVertex "1/2/3"
-          (MkModel p t n i) <- loadObj "cube.obj"
-          putStrLn $ "positions " ++ (show p)
-          --putStrLn $ "uvs " ++ (show t)
-          --putStrLn $ "normals " ++ (show n)
-          putStrLn $ "indices " ++ (show i)
-          pure ()
---}
+loadObj : (filename: String) -> IO ObjModel
+loadObj fname = do handle <- openFile fname Read
+                   objLines <- parseFile' handle [] 
+                   closeFile handle
+                   pure $ computeModel objLines
+                where
+                   partial
+                   parseFile' : File -> List ObjLine -> IO (List ObjLine)
+                   parseFile' h acc =
+                     do x <- feof h
+                        if not x then do l <- fread h
+                                         parseFile' h ((parseLine l) ++ acc)
+                        else return $ reverse acc
+                    
