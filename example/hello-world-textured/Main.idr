@@ -29,6 +29,8 @@ record Shaders where
   transformationMatrix: Int
   lightPosition : Int
   lightColor: Int
+  specularReflectivity : Int
+  shininess : Int
 
 createShaders : IO Shaders
 createShaders = do
@@ -69,7 +71,14 @@ createShaders = do
   locLightPos <- glGetUniformLocation program "lightPosition"
   locLightColor <- glGetUniformLocation program "lightColor"
 
-  pure $ MkShaders program [fragmentShader, vertexShader] loc locLightPos locLightColor
+  --locSpecIntensity    <- glGetUniformLocation program "lightIntensitySpecular"
+  locSpecReflectivity <- glGetUniformLocation program "reflectivitySpecular"
+  glUniform3fv locSpecReflectivity [1.0,1.0,1.0] 
+  
+  locShininess        <- glGetUniformLocation program "shininessFactor"
+  glUniform1f locShininess 2.0
+  
+  pure $ MkShaders program [fragmentShader, vertexShader] loc locLightPos locLightColor locSpecReflectivity locShininess
   
 
 destroyShaders : Shaders -> IO ()

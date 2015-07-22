@@ -32,6 +32,7 @@ void idr_glShaderSource(int id, void* source);
 
 void idr_glUniformMatrix4fv(int location, void* buffer);
 void idr_glUniform3fv(int location, void* buffer);
+void idr_glUniform1f(int location, double val);
 
 GLuint png_texture_load(const char * file_name);
 

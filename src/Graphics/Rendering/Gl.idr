@@ -518,6 +518,11 @@ glUniform3fv location vec =
      foreign FFI_C "idr_glUniform3fv" (Int -> Ptr -> IO ()) location ptr
      free ptr 
 
+public
+glUniform1f : (location: Int) -> Double -> IO ()
+glUniform1f location value = do foreign FFI_C "idr_glUniform1f" (Int -> Double -> IO ()) location value
+
+
 {--
 public 
 getShaderiv : 

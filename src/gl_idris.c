@@ -164,6 +164,11 @@ void idr_glUniform3fv(int location, void* buffer) {
   glUniform3fv(loc, 1, buff);
 }
 
+void idr_glUniform1f(int loc, double val) {
+  float v = val;
+  glUniform1f(loc, v);  
+}
+
 
 // only for testing!
 void idr_main_loop(void* win) {

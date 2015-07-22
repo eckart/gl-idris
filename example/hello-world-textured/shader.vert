@@ -7,6 +7,7 @@ layout(location=2) in vec3 inNormal;
 out vec2 passTextureCoords;
 out vec3 surfaceNormal;
 out vec3 toLightVector;
+out vec3 toCameraVector;
 
 
 uniform mat4 viewMatrix;
@@ -21,6 +22,8 @@ void main(void)
   gl_Position = projectionMatrix * viewMatrix * worldPosition;
   passTextureCoords = inTextureCoords;
   surfaceNormal = (transformMatrix * vec4(inNormal, 0.0)).xyz;
+
   toLightVector = lightPosition - worldPosition.xyz;
+  toCameraVector = (inverse(viewMatrix) * vec4(0.0, 0.0, 0.0, 1.0)).xyz - worldPosition.xyz;
 
 }
