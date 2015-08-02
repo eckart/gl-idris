@@ -1,7 +1,9 @@
 module Graphics.Rendering.Gl.Buffers
 
-%include C "gl_idris_buffers.h"
-%link C "gl_idris_buffers.o"
+%include C "gl_idris.h"
+%link C "gl_idris.o"
+
+%access public
 
 free : Ptr -> IO ()
 free ptr = foreign FFI_C "free" (Ptr -> IO ()) ptr

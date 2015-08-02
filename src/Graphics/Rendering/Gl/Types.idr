@@ -26,13 +26,13 @@ GLbitfield : Type
 GLbitfield = Int
 
 GLboolean : Type
-GLboolean = Char
+GLboolean = Int
 
 GLbyte : Type
-GLbyte = Bits8
+GLbyte = Char
 
 GLubyte : Type
-GLubyte = Bits8
+GLubyte = Char
 
 GLshort : Type
 GLshort = Int
@@ -68,3 +68,7 @@ GLclampf = Double
 -- the pointer size of the data len*sizeof(whatever)
 GLsizeiptr : Type
 GLsizeiptr = Int
+
+class GlEnum a where
+  toGlInt   : a -> Int
+
