@@ -2,6 +2,7 @@ module Graphics.Util.Math3D
 
 import Data.Matrix
 import Data.Floats
+import Data.Vect
 import Control.Algebra
 
 %access public

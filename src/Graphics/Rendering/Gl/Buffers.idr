@@ -117,4 +117,8 @@ intBufferToList ptr n = readIntBuffer' ptr [] (cast n)
         readIntBuffer' ptr xs (S k) = do x <- readInt ptr k 
                                          readIntBuffer' ptr (x :: xs) k 
 
+||| the size of a C-int
+sizeofInt : IO Int
+sizeofInt = foreign FFI_C "idr_buffers_int_size" (IO Int)
+
 

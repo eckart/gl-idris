@@ -1,6 +1,6 @@
 package test
 
-opts = "-p effects -p gl -p contrib -p lightyear" 
+opts = "-p effects -p glfw -p gl -p contrib -p lightyear" 
 
 executable = test
 main = Main

@@ -40,6 +40,8 @@ int idr_buffers_read_int(void* buf, int index);
 // creates an int buffer
 void* idr_buffers_int_buffer(int len);
 
+// the size of a int
+int idr_buffers_int_size();
 
 // -------------------------------------------------------------- [ old functions ]
 

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <idris_rts.h>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <png.h>
 
 // -------------------------------------------------------------- [ buffers ]
@@ -70,6 +69,10 @@ int idr_buffers_read_int(void* buf, int index) {
 void* idr_buffers_int_buffer(int len) {
   int* buf = malloc(len*sizeof(int));
   return (void*) buf;
+}
+
+int idr_buffers_int_size() {
+  return sizeof(int);
 }
 
 

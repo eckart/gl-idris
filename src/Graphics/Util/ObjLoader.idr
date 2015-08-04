@@ -8,37 +8,24 @@ import Lightyear.Core
 import Lightyear.Combinators
 import Lightyear.Strings
 
+import Graphics.Util.Mesh
 
 %access private
 
-Vertex : Type
-Vertex = Vect 3 Double
+vtx : Double -> Double -> Double -> Vec3
+vtx x y z = [x, y, z]
 
-vtx : Double -> Double -> Double -> Vertex
-vtx x y z = x :: y :: z :: [] 
-
-UV : Type
-UV = Vect 2 Double
-
-uv : Double -> Double -> UV
-uv u v = u :: v :: [] 
+uv : Double -> Double -> Vec2
+uv u v = [u, v] 
 
 Index : Type
 Index = (Int, Int, Int)                  
 
-public
-data ObjModel : Type where
-  MkObjModel :  List (Vect 3 Double) -- positions
-          -> List (Vect 2 Double) -- texture coordinates / UVs
-          -> List (Vect 3 Double) -- normals
-          -> List Int             -- indices
-          -> ObjModel
-
 abstract
 data ObjLine
-  = Position Vertex
-  | TextureCoord UV
-  | Normal Vertex
+  = Position Vec3
+  | TextureCoord Vec2
+  | Normal Vec3
   | Face Index Index Index
   | Comment String
   | Ignored String
@@ -140,14 +127,14 @@ parseLine input = case parse line input of
   Left  e => [] -- ignore Errors for now
   Right x => [x]
   
-processLines : List ObjLine -> (List Vertex, List Vertex, List UV, List Index)
+processLines : List ObjLine -> (List Vec3, List Vec3, List Vec2, List Index)
 processLines lines = processLines' lines [] [] [] []
                    where processLines' : List ObjLine
-                                       -> List Vertex -- positions
-                                       -> List Vertex -- normals
-                                       -> List UV     -- UVs / TextureCoordinates
+                                       -> List Vec3 -- positions
+                                       -> List Vec3 -- normals
+                                       -> List Vec2     -- UVs / TextureCoordinates
                                        -> List Index -- indices
-                                       -> (List Vertex, List Vertex, List UV, List Index)
+                                       -> (List Vec3, List Vec3, List Vec2, List Index)
                          processLines' []         pos norm uvs ind = (reverse pos, reverse norm, reverse uvs, reverse ind)
                          processLines' (l :: ls)  pos norm uvs ind = case l of
                            Position v      => processLines' ls (v :: pos)       norm        uvs                     ind 
@@ -166,15 +153,15 @@ mapByIndex xs = mapByIndex' (cast $ (length xs) - 1) empty (reverse xs)
 
 record VertexData where
   constructor MkData
-  position : Vertex
-  uv       : UV
-  normal   : Vertex
+  position : Vec3
+  uv       : Vec2
+  normal   : Vec3
 
 
 getData : Index 
-          -> M.SortedMap Int Vertex
-          -> M.SortedMap Int Vertex
-          -> M.SortedMap Int UV
+          -> M.SortedMap Int Vec3
+          -> M.SortedMap Int Vec3
+          -> M.SortedMap Int Vec2
           -> Maybe VertexData
 getData (p,t,n) positions normals uvs = do
   position <- lookup (p-1) positions
@@ -182,12 +169,19 @@ getData (p,t,n) positions normals uvs = do
   uv       <- lookup (t-1) uvs
   pure $ MkData position uv normal
 
+toVects : List VertexData -> (Vect n Vec3, Vect n Vec2, Vect n Vec3)
+toVects {n = Z}   []        = ([], [], [])
+toVects {n = S m} (x :: xs) with (toVects {n=m} xs )
+  | (ps, uvs, norms) = ((position x) :: ps, (uv x) :: uvs, (normal x) :: norms )
+
+
+
 -- input is: a list of indices (triples of indices) and the Map with the vertexData for the indices
 -- output will be: a list of Results for the vertex data and a list of indices for the vertex data
 processFace : List Index
-              -> M.SortedMap Int Vertex
-              -> M.SortedMap Int Vertex
-              -> M.SortedMap Int UV
+              -> M.SortedMap Int Vec3
+              -> M.SortedMap Int Vec3
+              -> M.SortedMap Int Vec2
               -> Int
               -> M.SortedMap Index Int        -- maps the given index v/t/n to the actual result index
               -> M.SortedMap Int VertexData   -- maps the given result index to the actual vertex data
@@ -201,7 +195,7 @@ processFace (f::faces)  p n t cnt indices vData buffer = case (lookup f indices)
     Nothing => processFace faces p n t cnt indices vData buffer -- ignore face: should not be possible
 
 
-computeModel : List ObjLine -> ObjModel
+computeModel : List ObjLine -> Mesh
 computeModel objLines = 
   let 
     (positions, normals, uvs, indices) = processLines objLines
@@ -210,10 +204,13 @@ computeModel objLines =
     mappedUvs        = mapByIndex uvs        -- Map Int UV
     positionIndices = reverse $ map fst indices
     (posn, vData) = processFace indices mappedPositions mappedNormals mappedUvs 0 M.empty M.empty []
-  in MkObjModel (map position vData) (map uv vData) (map normal vData) posn
+    
+    (positions, uvs, norms) = toVects {n=length vData} vData
+    
+  in UvMesh positions norms uvs posn
 
 public 
-loadObj : (filename: String) -> IO ObjModel
+loadObj : (filename: String) -> IO Mesh
 loadObj fname = do handle <- openFile fname Read
                    objLines <- parseFile' handle [] 
                    closeFile handle

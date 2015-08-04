@@ -3,16 +3,11 @@
 layout(location=0) in vec4 in_Position;
 layout(location=1) in vec4 in_Color;
 
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 transformMatrix;
-
 out vec4 ex_Color;
-
 
 void main(void)
 {
-  gl_Position = projectionMatrix * viewMatrix * transformMatrix * in_Position;
+  gl_Position = in_Position;
   //gl_Position = in_Position;
   ex_Color = in_Color;
 }

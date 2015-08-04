@@ -1,14 +1,15 @@
 module Main
 
-import Control.Algebra
-import Data.Matrix
+import Graphics.Rendering.Gl.Types
+import Graphics.Rendering.Gl.Buffers
+import Graphics.Rendering.Gl.Gl41
 import Graphics.Rendering.Gl
 import Graphics.Util.Glfw
 import Graphics.Rendering.Config
-import Graphics.Util.Math3D
 import Data.Floats
 
 %include C "GL/glew.h"
+%flag C "-Wno-pointer-sign"
 
 flatten : List (Double, Double, Double, Double) -> List Double
 flatten [] = []
@@ -16,23 +17,32 @@ flatten ((a,b,c,d) :: xs) = [a,b,c,d] ++ (flatten xs)
 
 showError : String -> IO ()
 showError msg = do err <- glGetError
-                   putStrLn $ msg ++ (show err)
+                   if err == 0 
+                   then putStrLn $ msg ++ " -  OK "
+                   else putStrLn $ msg ++ (show err)
 
-createShaders : IO (Shader, Shader, Program)
+record Shaders where
+  constructor MkShaders
+  vertexShader : Int
+  fragmentShader : Int
+  program : Int
+  
+
+createShaders : IO Shaders
 createShaders = do
   glGetError
   vertexShader <- glCreateShader GL_VERTEX_SHADER
   
   showError "create vertex shader "
   vtx <- readFile "shader.vtx"
-  glShaderSource vertexShader vtx
+  glShaderSource vertexShader 1 [vtx] [(cast $ length vtx)]
   glCompileShader vertexShader
   
   fragmentShader <- glCreateShader GL_FRAGMENT_SHADER
   showError "create fragment shader "
 
   frg <- readFile "shader.frg"
-  glShaderSource fragmentShader frg 
+  glShaderSource fragmentShader 1 [frg] [(cast $ length frg)]
   glCompileShader fragmentShader  
   
   program <- glCreateProgram
@@ -48,26 +58,18 @@ createShaders = do
   printShaderLog vertexShader
   printShaderLog fragmentShader
 
-  locView <- glGetUniformLocation program "viewMatrix"
-  glUniformMatrix4fv locView defaultViewMatrix
-
-  locProj <- glGetUniformLocation program "projectionMatrix"
-  let projM = perspectiveProjection (Degree 45) (640 / 480) (1.0, 100.0)
-  glUniformMatrix4fv locProj $ projM
-  
-  pure (vertexShader, fragmentShader, program)
+  pure $ MkShaders vertexShader fragmentShader program
   
 
-destroyShaders : (Shader, Shader, Program) -> IO ()
-destroyShaders (shader1, shader2, program) = do
+destroyShaders : Shaders -> IO ()
+destroyShaders (MkShaders shader1 shader2 program) = do
   glGetError
-  glUseProgram noProgram
+  glUseProgram 0
   glDetachShader program shader1
   glDetachShader program shader2
   glDeleteShader shader1
   glDeleteShader shader2
   glDeleteProgram program
-  showError "delete shaders "
   pure ()
 
 vertices : List (Double, Double, Double, Double)
@@ -84,58 +86,71 @@ colors = [
     (0.0, 0.0, 1.0, 1.0)
   ]
 
-createBuffers : IO (Vao, Buffer, Buffer)
+record Vao where
+  constructor MkVao
+  id : Int
+  buffer1 : Int
+  buffer2 : Int
+    
+createBuffers : IO Vao
 createBuffers = do
+  ds <- sizeofDouble
   glGetError
 
-  vao <- glGenVertexArrays
+  (vao :: _) <- glGenVertexArrays 1
+
   glBindVertexArray vao
-  buffer <- glGenBuffers
+  (buffer :: colorBuffer :: _) <- glGenBuffers 2
   glBindBuffer GL_ARRAY_BUFFER buffer
-  glBufferData GL_ARRAY_BUFFER (flatten vertices) GL_STATIC_DRAW
+  
+  let data1 = (flatten vertices)
+  ptr <- doublesToBuffer data1
+  glBufferData GL_ARRAY_BUFFER (ds * (cast $ length data1)) ptr GL_STATIC_DRAW
+  free ptr
+  
   showError "vertex buffer data "
   glEnableVertexAttribArray 0
-  glVertexAttribPointer 0 4 GL_DOUBLE GL_FALSE 0 0
+  glVertexAttribPointer 0 4 GL_DOUBLE GL_FALSE 0 prim__null
 
-  colorBuffer <- glGenBuffers
+
   glBindBuffer GL_ARRAY_BUFFER colorBuffer
-  glBufferData GL_ARRAY_BUFFER (flatten colors) GL_STATIC_DRAW
+
+  let data2 = (flatten colors)
+  ptr2 <- doublesToBuffer data2
+  glBufferData GL_ARRAY_BUFFER (ds * (cast $ length data2)) ptr2 GL_STATIC_DRAW
+  free ptr2
+
   glEnableVertexAttribArray 1
-  glVertexAttribPointer 1 4 GL_DOUBLE GL_FALSE 0 0
-
+  glVertexAttribPointer 1 4 GL_DOUBLE GL_FALSE 0 prim__null
   showError "color buffer "
-  pure $ (vao, buffer, colorBuffer)
+
+  pure $ MkVao vao buffer colorBuffer
 
 
-destroyBuffers : Vao -> Buffer -> Buffer -> IO ()
-destroyBuffers vao buffer colorBuffer = do
+destroyBuffers : Vao -> IO ()
+destroyBuffers (MkVao vao buffer colorBuffer) = do
   glDisableVertexAttribArray 1
   glDisableVertexAttribArray 0
   
-  glUnbindBuffer GL_ARRAY_BUFFER
+  glBindBuffer GL_ARRAY_BUFFER 0
 
-  glDeleteBuffer buffer
-  glDeleteBuffer colorBuffer
+  glDeleteBuffers 2 [buffer, colorBuffer]
 
-  glUnbindVertexArray
+  glBindVertexArray 0
   
-  glDeleteVertexArray vao
+  glDeleteVertexArrays 1 [vao]
 
   showError "destroy buffers "
 
-data State = MkState GlfwWindow Vao Program (Double, Double) Double
+data State = MkState GlfwWindow Vao Shaders
 
 draw : State -> IO ()
-draw (MkState win vao prog (z, x) rotation) = do 
+draw (MkState win vao (MkShaders _ _ prog)) = do 
                    glClearColor 0 0 0 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
-                   glBindVertexArray vao
+                   glBindVertexArray (id vao)
                    glUseProgram prog
-
-                   --putStrLn $ "Drawing at " ++ (show distance) ++ " / " ++ (show rotation)
-                   loc <- glGetUniformLocation prog "transformMatrix"
-                   glUniformMatrix4fv loc $ (translate [x, 0, z]) <> (rotateZ (Degree rotation))
 
                    glDrawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
@@ -158,41 +173,21 @@ initDisplay title width height = do
   glDepthFunc GL_LESS
   return win
 
-isKeyPressed : GlfwWindow -> Char -> IO Bool
-isKeyPressed win key = do 
-  ev <- glfwGetKey win key 
-  if ev == GLFW_PRESS
-  then return True
-  else return False
-
-updateState :State -> IO State
-updateState (MkState win vao prog (z, x) rotation) = do
-  w <- isKeyPressed win 'W'
-  s <- isKeyPressed win 'S'
-  let z' = if w then z - 0.002 else z
-  let z'' = if s then z' + 0.002 else z'
-  left  <- isKeyPressed win 'A'
-  right <- isKeyPressed win 'D'
-  let x' = if left then x - 0.002 else x
-  let x'' = if right then x' + 0.002 else x'
-  return $ MkState win vao prog (z'', x'') (rotation + 0.2)
-
 main : IO ()
 main = do win <- initDisplay "Hello Idris" 640 480
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
-          (vertexShader, fragmentShader, prog) <- createShaders
-          (vao, buffer, colorBuffer) <- createBuffers
-          eventLoop $ MkState win vao prog (-1.0, 0.0) 0.0
-          printShaderLog vertexShader
-          destroyBuffers vao buffer colorBuffer
-          destroyShaders (vertexShader, fragmentShader, prog)
+          shaders <- createShaders
+          vao <- createBuffers
+          eventLoop $ MkState win vao shaders
+          destroyBuffers vao
+          destroyShaders shaders
           glfwDestroyWindow win
           glfwTerminate
           pure ()
        where 
          eventLoop : State -> IO ()
-         eventLoop state@(MkState win vao prog distance rotation) = do
+         eventLoop state@(MkState win vao prog) = do
                       draw state 
                       glfwPollEvents
                       key <- glfwGetFunctionKey win GLFW_KEY_ESCAPE
@@ -200,5 +195,4 @@ main = do win <- initDisplay "Hello Idris" 640 480
                       if shouldClose || key == GLFW_PRESS
                       then pure ()
                       else do 
-                        state' <- updateState state
-                        eventLoop state'
+                        eventLoop state
