@@ -1,5 +1,6 @@
 module Graphics.Rendering.Gl
 
+import Data.Fin
 import Graphics.Util.Mesh
 import Graphics.Rendering.Gl.Types
 import Graphics.Rendering.Gl.Buffers
@@ -33,6 +34,17 @@ toList' (x :: xs) = (toList x) ++ toList' xs
 -- ----------------------------------------------------------------- [ Simple API ]
 
 public
+data Light : Type where
+  PointLight: (position: Vec3) -> (color: Vec3) -> Light
+
+
+public
+record Texture where
+  constructor MkTexture
+  textureLocation: Int
+  
+
+public
 record Shader where
   constructor MkShader
   ||| location of the shader program
@@ -41,8 +53,9 @@ record Shader where
   shaders: Vect (S (S n)) Int
 
 createShader : (GLenum, String) -> IO Int
-createShader (shaderType, source) = do
+createShader (shaderType, filename) = do
   shaderLoc <- glCreateShader shaderType
+  source <- readFile filename
   glShaderSource shaderLoc 1 [source] [(cast $ length source)]
   glCompileShader shaderLoc
   pure shaderLoc
@@ -75,18 +88,23 @@ deleteShaders (MkShader programLoc shaderLocs) = do
 ||| the minumum information needed is the location of the vertex array object (VAO)
 ||| and the locations of the vertex buffer objects (VBO)
 ||| textures are optional
+public
 data Model : Type where
   ||| creates a textured model 
   ||| @ vao the location of the vertex array object
   ||| @ vbos the locations of the vertex buffer objects
+  ||| @ indices the number of indices
   ||| @ textures locations of the textures for the model
-  TexturedModel : (vao: Int) -> (vbos: Vect (S n) Int) -> (textures: Vect m Int) -> Model
+  TexturedModel : (vao: Int) -> 
+                  (vbos: Vect (S n) Int) -> 
+                  (indices: Int) -> 
+                  (textures: Vect m Texture) -> Model
 
 ||| creates a model from a mesh and some texture locations
 ||| @ m the mesh. should be uv unwrapped
 ||| @ textures texture locations we need to bind when using the model
 public
-createModel : (m: Mesh) -> (textures: (Vect n Int)) -> IO Model
+createModel : (m: Mesh) -> (textures: (Vect n Texture)) -> IO Model
 createModel (UvMesh positions normals uvs indices) textures = do
   (vaoLoc :: _) <- glGenVertexArrays 1
 
@@ -101,12 +119,12 @@ createModel (UvMesh positions normals uvs indices) textures = do
   glBindBuffer GL_ARRAY_BUFFER normalBuffer
   loadDoubleData (toList' normals)
   glEnableVertexAttribArray 1
-  glVertexAttribPointer 0 3 GL_DOUBLE GL_FALSE 0 prim__null
+  glVertexAttribPointer 1 3 GL_DOUBLE GL_FALSE 0 prim__null
 
   glBindBuffer GL_ARRAY_BUFFER uvBuffer
   loadDoubleData (toList' uvs)
   glEnableVertexAttribArray 2
-  glVertexAttribPointer 0 2 GL_DOUBLE GL_FALSE 0 prim__null
+  glVertexAttribPointer 2 2 GL_DOUBLE GL_FALSE 0 prim__null
         
   is <- sizeofInt
   glBindBuffer GL_ELEMENT_ARRAY_BUFFER indexBuffer
@@ -114,12 +132,12 @@ createModel (UvMesh positions normals uvs indices) textures = do
   glBufferData GL_ELEMENT_ARRAY_BUFFER (is * (cast $ length indices)) ptr GL_STATIC_DRAW
   free ptr
 
-  pure $ TexturedModel vaoLoc [positionBuffer, normalBuffer, uvBuffer, indexBuffer] textures
+  pure $ TexturedModel vaoLoc [positionBuffer, normalBuffer, uvBuffer, indexBuffer] (cast $ length indices) textures
 
 
 public
 deleteModel : Model -> IO ()
-deleteModel (TexturedModel vao vbos _) = do
+deleteModel (TexturedModel vao vbos _ _) = do
   glDisableVertexAttribArray 2 -- uvs
   glDisableVertexAttribArray 1 -- normals
   glDisableVertexAttribArray 0 -- positions
@@ -134,25 +152,49 @@ deleteModel (TexturedModel vao vbos _) = do
   glDeleteVertexArrays 1 [vao]
   pure ()
 
+public
 data Entity a = 
   SimpleEntity Model Shader Vec3 Vec3 a
   
       
 public 
 render : Entity a -> (prepare: a -> IO ()) -> IO ()
-render (SimpleEntity (TexturedModel vao _ textures) (MkShader prog _) position rotation val) prepare = do
+render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) position rotation val) prepare = do
   glBindVertexArray vao
+  --glEnableVertexAttribArray 0
+  --glEnableVertexAttribArray 1
+  --glEnableVertexAttribArray 2
+
   glUseProgram prog
   prepare val
-  traverse (glBindTexture GL_TEXTURE_2D) textures
+  traverse (\t => glBindTexture GL_TEXTURE_2D (textureLocation t)) textures
   
-  glDrawArrays GL_TRIANGLES 0 3
+  glDrawElements GL_TRIANGLES numIndices GL_UNSIGNED_INT prim__null
   pure ()
 
 
 public 
 glLoadPNGTexture : String -> IO Int
 glLoadPNGTexture filename = foreign FFI_C "png_texture_load" (String -> IO Int) filename
+
+
+public 
+loadTexture : String -> Fin 30 -> IO Texture
+loadTexture filename index = do
+  putStrLn $ "Loading " ++ filename ++ " to texture unit " ++ (show $ finToNat index)
+  glActiveTexture (GL_TEXTURE0 + (cast $ finToNat index))
+  texture <- glLoadPNGTexture filename
+
+  -- the texture is bound ... so we can set some params
+  glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE
+  glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_T GL_CLAMP_TO_EDGE
+  glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR
+  glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR
+  pure $ MkTexture texture
+ 
+public 
+deleteTextures : List Texture -> IO ()
+deleteTextures xs = glDeleteTextures (cast $ length xs) $ map textureLocation xs
 
 -- ----------------------------------------------------------------- [ Helper ]
 
