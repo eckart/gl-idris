@@ -19,16 +19,6 @@ record State where
   constructor MkState
   win: GlfwWindow
   entity : Entity String
-  
-render' : Entity a -> IO ()
-render' (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) position rotation val) = do
-  glBindVertexArray vao
-  glUseProgram prog
-  traverse (\t => glBindTexture GL_TEXTURE_2D (textureLocation t)) textures
-  
-  glDrawElements GL_TRIANGLES numIndices GL_UNSIGNED_INT prim__null
-  pure ()
-  
 
 draw : State -> IO ()
 draw (MkState win entity) = do 
@@ -36,7 +26,7 @@ draw (MkState win entity) = do
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
                    
-                   render' entity
+                   render entity (\_ => pure ())
                    
                    glfwSwapBuffers win
 

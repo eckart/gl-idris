@@ -1180,17 +1180,438 @@ namespace BufferAccessARB
     toGlInt GL_WRITE_ONLY             = 0x88B9
     toGlInt GL_READ_WRITE             = 0x88BA
 
-glGenVertexArrays : GLsizei -> IO (List GLuint)
-glGenVertexArrays n = 
+glCullFace : CullFaceMode -> IO ()
+glCullFace mode = 
+  foreign FFI_C "glCullFace" ( Int -> IO ()) (toGlInt mode)
+
+
+
+glFrontFace : FrontFaceDirection -> IO ()
+glFrontFace mode = 
+  foreign FFI_C "glFrontFace" ( Int -> IO ()) (toGlInt mode)
+
+
+
+glHint : HintTarget -> HintMode -> IO ()
+glHint target mode = 
+  foreign FFI_C "glHint" ( Int -> Int -> IO ()) (toGlInt target) (toGlInt mode)
+
+
+
+glLineWidth : GLfloat -> IO ()
+glLineWidth width = 
+  foreign FFI_C "glLineWidth" ( GLfloat -> IO ()) width
+
+
+
+glPointSize : GLfloat -> IO ()
+glPointSize size = 
+  foreign FFI_C "glPointSize" ( GLfloat -> IO ()) size
+
+
+
+glPolygonMode : MaterialFace -> PolygonMode -> IO ()
+glPolygonMode face mode = 
+  foreign FFI_C "glPolygonMode" ( Int -> Int -> IO ()) (toGlInt face) (toGlInt mode)
+
+
+
+glScissor : GLint -> GLint -> GLsizei -> GLsizei -> IO ()
+glScissor x y width height = 
+  foreign FFI_C "glScissor" ( GLint -> GLint -> GLsizei -> GLsizei -> IO ()) x y width height
+
+
+
+glTexParameterf : TextureTarget -> TextureParameterName -> GLfloat -> IO ()
+glTexParameterf target pname param = 
+  foreign FFI_C "glTexParameterf" ( Int -> Int -> GLfloat -> IO ()) (toGlInt target) (toGlInt pname) param
+
+
+
+glTexParameterfv : TextureTarget -> TextureParameterName -> (List GLfloat) -> IO ()
+glTexParameterfv target pname params = 
+   do params' <- floatsToBuffer params
+      res <- foreign FFI_C "glTexParameterfv" ( Int -> Int -> Ptr -> IO ()) (toGlInt target) (toGlInt pname) params' 
+      free params'
+      pure ()
+
+
+
+glTexParameteri : TextureTarget -> TextureParameterName -> GLint -> IO ()
+glTexParameteri target pname param = 
+  foreign FFI_C "glTexParameteri" ( Int -> Int -> GLint -> IO ()) (toGlInt target) (toGlInt pname) param
+
+
+
+glTexParameteriv : TextureTarget -> TextureParameterName -> (List GLint) -> IO ()
+glTexParameteriv target pname params = 
+   do params' <- intsToBuffer params
+      res <- foreign FFI_C "glTexParameteriv" ( Int -> Int -> Ptr -> IO ()) (toGlInt target) (toGlInt pname) params' 
+      free params'
+      pure ()
+
+
+
+glTexImage1D : TextureTarget -> GLint -> GLint -> GLsizei -> GLint -> PixelFormat -> PixelType -> Ptr -> IO ()
+glTexImage1D target level internalformat width border format type pixels = 
+  foreign FFI_C "glTexImage1D" ( Int -> GLint -> GLint -> GLsizei -> GLint -> Int -> Int -> Ptr -> IO ()) (toGlInt target) level internalformat width border (toGlInt format) (toGlInt type) pixels
+
+
+
+glTexImage2D : TextureTarget -> GLint -> GLint -> GLsizei -> GLsizei -> GLint -> PixelFormat -> PixelType -> Ptr -> IO ()
+glTexImage2D target level internalformat width height border format type pixels = 
+  foreign FFI_C "glTexImage2D" ( Int -> GLint -> GLint -> GLsizei -> GLsizei -> GLint -> Int -> Int -> Ptr -> IO ()) (toGlInt target) level internalformat width height border (toGlInt format) (toGlInt type) pixels
+
+
+
+glDrawBuffer : DrawBufferMode -> IO ()
+glDrawBuffer buf = 
+  foreign FFI_C "glDrawBuffer" ( Int -> IO ()) (toGlInt buf)
+
+
+
+glClear : ClearBufferMask -> IO ()
+glClear mask = 
+  foreign FFI_C "glClear" ( Int -> IO ()) (toGlInt mask)
+
+
+
+glClearColor : GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glClearColor red green blue alpha = 
+  foreign FFI_C "glClearColor" ( GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) red green blue alpha
+
+
+
+glClearStencil : GLint -> IO ()
+glClearStencil s = 
+  foreign FFI_C "glClearStencil" ( GLint -> IO ()) s
+
+
+
+glClearDepth : GLdouble -> IO ()
+glClearDepth depth = 
+  foreign FFI_C "glClearDepth" ( GLdouble -> IO ()) depth
+
+
+
+glStencilMask : GLuint -> IO ()
+glStencilMask mask = 
+  foreign FFI_C "glStencilMask" ( GLuint -> IO ()) mask
+
+
+
+glColorMask : GLboolean -> GLboolean -> GLboolean -> GLboolean -> IO ()
+glColorMask red green blue alpha = 
+  foreign FFI_C "glColorMask" ( GLboolean -> GLboolean -> GLboolean -> GLboolean -> IO ()) red green blue alpha
+
+
+
+glDepthMask : GLboolean -> IO ()
+glDepthMask flag = 
+  foreign FFI_C "glDepthMask" ( GLboolean -> IO ()) flag
+
+
+
+glDisable : EnableCap -> IO ()
+glDisable cap = 
+  foreign FFI_C "glDisable" ( Int -> IO ()) (toGlInt cap)
+
+
+
+glEnable : EnableCap -> IO ()
+glEnable cap = 
+  foreign FFI_C "glEnable" ( Int -> IO ()) (toGlInt cap)
+
+
+
+glFinish : IO ()
+glFinish = 
+  foreign FFI_C "glFinish" (IO ())
+
+
+
+glFlush : IO ()
+glFlush = 
+  foreign FFI_C "glFlush" (IO ())
+
+
+
+glBlendFunc : BlendingFactorSrc -> BlendingFactorDest -> IO ()
+glBlendFunc sfactor dfactor = 
+  foreign FFI_C "glBlendFunc" ( Int -> Int -> IO ()) (toGlInt sfactor) (toGlInt dfactor)
+
+
+
+glLogicOp : LogicOp -> IO ()
+glLogicOp opcode = 
+  foreign FFI_C "glLogicOp" ( Int -> IO ()) (toGlInt opcode)
+
+
+
+glStencilFunc : StencilFunction -> GLint -> GLuint -> IO ()
+glStencilFunc func ref mask = 
+  foreign FFI_C "glStencilFunc" ( Int -> GLint -> GLuint -> IO ()) (toGlInt func) ref mask
+
+
+
+glStencilOp : StencilOp -> StencilOp -> StencilOp -> IO ()
+glStencilOp fail dpfail dppass = 
+  foreign FFI_C "glStencilOp" ( Int -> Int -> Int -> IO ()) (toGlInt fail) (toGlInt dpfail) (toGlInt dppass)
+
+
+
+glDepthFunc : DepthFunction -> IO ()
+glDepthFunc func = 
+  foreign FFI_C "glDepthFunc" ( Int -> IO ()) (toGlInt func)
+
+
+
+glPixelStoref : PixelStoreParameter -> GLfloat -> IO ()
+glPixelStoref pname param = 
+  foreign FFI_C "glPixelStoref" ( Int -> GLfloat -> IO ()) (toGlInt pname) param
+
+
+
+glPixelStorei : PixelStoreParameter -> GLint -> IO ()
+glPixelStorei pname param = 
+  foreign FFI_C "glPixelStorei" ( Int -> GLint -> IO ()) (toGlInt pname) param
+
+
+
+glReadBuffer : ReadBufferMode -> IO ()
+glReadBuffer mode = 
+  foreign FFI_C "glReadBuffer" ( Int -> IO ()) (toGlInt mode)
+
+
+
+glGetError : IO GLenum
+glGetError = 
+  foreign FFI_C "glGetError" (IO GLenum)
+
+
+
+glGetString : StringName -> IO String
+glGetString name = 
+  foreign FFI_C "glGetString" ( Int -> IO String) (toGlInt name)
+
+
+
+glIsEnabled : EnableCap -> IO GLboolean
+glIsEnabled cap = 
+  foreign FFI_C "glIsEnabled" ( Int -> IO GLboolean) (toGlInt cap)
+
+
+
+glDepthRange : GLdouble -> GLdouble -> IO ()
+glDepthRange near far = 
+  foreign FFI_C "glDepthRange" ( GLdouble -> GLdouble -> IO ()) near far
+
+
+
+glViewport : GLint -> GLint -> GLsizei -> GLsizei -> IO ()
+glViewport x y width height = 
+  foreign FFI_C "glViewport" ( GLint -> GLint -> GLsizei -> GLsizei -> IO ()) x y width height
+
+
+
+glDrawArrays : PrimitiveType -> GLint -> GLsizei -> IO ()
+glDrawArrays mode first count = 
+  foreign FFI_C "glDrawArrays" ( Int -> GLint -> GLsizei -> IO ()) (toGlInt mode) first count
+
+
+
+glDrawElements : PrimitiveType -> GLsizei -> DrawElementsType -> Ptr -> IO ()
+glDrawElements mode count type indices = 
+  foreign FFI_C "glDrawElements" ( Int -> GLsizei -> Int -> Ptr -> IO ()) (toGlInt mode) count (toGlInt type) indices
+
+
+
+glPolygonOffset : GLfloat -> GLfloat -> IO ()
+glPolygonOffset factor units = 
+  foreign FFI_C "glPolygonOffset" ( GLfloat -> GLfloat -> IO ()) factor units
+
+
+
+glCopyTexSubImage1D : TextureTarget -> GLint -> GLint -> GLint -> GLint -> GLsizei -> IO ()
+glCopyTexSubImage1D target level xoffset x y width = 
+  foreign FFI_C "glCopyTexSubImage1D" ( Int -> GLint -> GLint -> GLint -> GLint -> GLsizei -> IO ()) (toGlInt target) level xoffset x y width
+
+
+
+glCopyTexSubImage2D : TextureTarget -> GLint -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> IO ()
+glCopyTexSubImage2D target level xoffset yoffset x y width height = 
+  foreign FFI_C "glCopyTexSubImage2D" ( Int -> GLint -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> IO ()) (toGlInt target) level xoffset yoffset x y width height
+
+
+
+glTexSubImage1D : TextureTarget -> GLint -> GLint -> GLsizei -> PixelFormat -> PixelType -> Ptr -> IO ()
+glTexSubImage1D target level xoffset width format type pixels = 
+  foreign FFI_C "glTexSubImage1D" ( Int -> GLint -> GLint -> GLsizei -> Int -> Int -> Ptr -> IO ()) (toGlInt target) level xoffset width (toGlInt format) (toGlInt type) pixels
+
+
+
+glTexSubImage2D : TextureTarget -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> PixelFormat -> PixelType -> Ptr -> IO ()
+glTexSubImage2D target level xoffset yoffset width height format type pixels = 
+  foreign FFI_C "glTexSubImage2D" ( Int -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> Int -> Int -> Ptr -> IO ()) (toGlInt target) level xoffset yoffset width height (toGlInt format) (toGlInt type) pixels
+
+
+
+glBindTexture : TextureTarget -> GLuint -> IO ()
+glBindTexture target texture = 
+  foreign FFI_C "glBindTexture" ( Int -> GLuint -> IO ()) (toGlInt target) texture
+
+
+
+glDeleteTextures : GLsizei -> (List GLuint) -> IO ()
+glDeleteTextures n textures = 
+   do textures' <- intsToBuffer textures
+      res <- foreign FFI_C "glDeleteTextures" ( GLsizei -> Ptr -> IO ()) n textures' 
+      free textures'
+      pure ()
+
+
+
+glGenTextures : GLsizei -> IO (List GLuint)
+glGenTextures n = 
   do ptr <- intBuffer n
-     foreign FFI_C "glGenVertexArrays" ( GLsizei -> Ptr -> IO ()) n ptr 
+     foreign FFI_C "glGenTextures" ( GLsizei -> Ptr -> IO ()) n ptr 
      intBufferToList ptr n
 
 
 
-glBindVertexArray : GLuint -> IO ()
-glBindVertexArray array = 
-  foreign FFI_C "glBindVertexArray" ( GLuint -> IO ()) array
+glIsTexture : GLuint -> IO GLboolean
+glIsTexture texture = 
+  foreign FFI_C "glIsTexture" ( GLuint -> IO GLboolean) texture
+
+
+
+glDrawRangeElements : PrimitiveType -> GLuint -> GLuint -> GLsizei -> DrawElementsType -> Ptr -> IO ()
+glDrawRangeElements mode start end count type indices = 
+  foreign FFI_C "glDrawRangeElements" ( Int -> GLuint -> GLuint -> GLsizei -> Int -> Ptr -> IO ()) (toGlInt mode) start end count (toGlInt type) indices
+
+
+
+glTexImage3D : TextureTarget -> GLint -> GLint -> GLsizei -> GLsizei -> GLsizei -> GLint -> PixelFormat -> PixelType -> Ptr -> IO ()
+glTexImage3D target level internalformat width height depth border format type pixels = 
+  foreign FFI_C "glTexImage3D" ( Int -> GLint -> GLint -> GLsizei -> GLsizei -> GLsizei -> GLint -> Int -> Int -> Ptr -> IO ()) (toGlInt target) level internalformat width height depth border (toGlInt format) (toGlInt type) pixels
+
+
+
+glTexSubImage3D : TextureTarget -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> GLsizei -> PixelFormat -> PixelType -> Ptr -> IO ()
+glTexSubImage3D target level xoffset yoffset zoffset width height depth format type pixels = 
+  foreign FFI_C "glTexSubImage3D" ( Int -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> GLsizei -> Int -> Int -> Ptr -> IO ()) (toGlInt target) level xoffset yoffset zoffset width height depth (toGlInt format) (toGlInt type) pixels
+
+
+
+glCopyTexSubImage3D : TextureTarget -> GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> IO ()
+glCopyTexSubImage3D target level xoffset yoffset zoffset x y width height = 
+  foreign FFI_C "glCopyTexSubImage3D" ( Int -> GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> IO ()) (toGlInt target) level xoffset yoffset zoffset x y width height
+
+
+
+glActiveTexture : GLsizei -> IO ()
+glActiveTexture texture = 
+  foreign FFI_C "glActiveTexture" ( GLsizei -> IO ()) texture
+
+
+
+glSampleCoverage : GLfloat -> GLboolean -> IO ()
+glSampleCoverage value invert = 
+  foreign FFI_C "glSampleCoverage" ( GLfloat -> GLboolean -> IO ()) value invert
+
+
+
+glCompressedTexSubImage3D : TextureTarget -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> GLsizei -> PixelFormat -> GLsizei -> Ptr -> IO ()
+glCompressedTexSubImage3D target level xoffset yoffset zoffset width height depth format imageSize data' = 
+  foreign FFI_C "glCompressedTexSubImage3D" ( Int -> GLint -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> GLsizei -> Int -> GLsizei -> Ptr -> IO ()) (toGlInt target) level xoffset yoffset zoffset width height depth (toGlInt format) imageSize data'
+
+
+
+glCompressedTexSubImage2D : TextureTarget -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> PixelFormat -> GLsizei -> Ptr -> IO ()
+glCompressedTexSubImage2D target level xoffset yoffset width height format imageSize data' = 
+  foreign FFI_C "glCompressedTexSubImage2D" ( Int -> GLint -> GLint -> GLint -> GLsizei -> GLsizei -> Int -> GLsizei -> Ptr -> IO ()) (toGlInt target) level xoffset yoffset width height (toGlInt format) imageSize data'
+
+
+
+glCompressedTexSubImage1D : TextureTarget -> GLint -> GLint -> GLsizei -> PixelFormat -> GLsizei -> Ptr -> IO ()
+glCompressedTexSubImage1D target level xoffset width format imageSize data' = 
+  foreign FFI_C "glCompressedTexSubImage1D" ( Int -> GLint -> GLint -> GLsizei -> Int -> GLsizei -> Ptr -> IO ()) (toGlInt target) level xoffset width (toGlInt format) imageSize data'
+
+
+
+glMultiDrawArrays : PrimitiveType -> (List GLint) -> (List GLsizei) -> GLsizei -> IO ()
+glMultiDrawArrays mode first count drawcount = 
+   do first' <- intsToBuffer first
+      count' <- intsToBuffer count
+      res <- foreign FFI_C "glMultiDrawArrays" ( Int -> Ptr -> Ptr -> GLsizei -> IO ()) (toGlInt mode) first' count' drawcount 
+      free first'
+      free count'
+      pure ()
+
+
+
+glMultiDrawElements : PrimitiveType -> (List GLsizei) -> DrawElementsType -> Ptr -> GLsizei -> IO ()
+glMultiDrawElements mode count type indices drawcount = 
+   do count' <- intsToBuffer count
+      res <- foreign FFI_C "glMultiDrawElements" ( Int -> Ptr -> Int -> Ptr -> GLsizei -> IO ()) (toGlInt mode) count' (toGlInt type) indices drawcount 
+      free count'
+      pure ()
+
+
+
+glBlendColor : GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glBlendColor red green blue alpha = 
+  foreign FFI_C "glBlendColor" ( GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) red green blue alpha
+
+
+
+glGenQueries : GLsizei -> IO (List GLuint)
+glGenQueries n = 
+  do ptr <- intBuffer n
+     foreign FFI_C "glGenQueries" ( GLsizei -> Ptr -> IO ()) n ptr 
+     intBufferToList ptr n
+
+
+
+glDeleteQueries : GLsizei -> (List GLuint) -> IO ()
+glDeleteQueries n ids = 
+   do ids' <- intsToBuffer ids
+      res <- foreign FFI_C "glDeleteQueries" ( GLsizei -> Ptr -> IO ()) n ids' 
+      free ids'
+      pure ()
+
+
+
+glIsQuery : GLuint -> IO GLboolean
+glIsQuery id = 
+  foreign FFI_C "glIsQuery" ( GLuint -> IO GLboolean) id
+
+
+
+glBeginQuery : GLenum -> GLuint -> IO ()
+glBeginQuery target id = 
+  foreign FFI_C "glBeginQuery" ( GLenum -> GLuint -> IO ()) target id
+
+
+
+glEndQuery : GLenum -> IO ()
+glEndQuery target = 
+  foreign FFI_C "glEndQuery" ( GLenum -> IO ()) target
+
+
+
+glBindBuffer : BufferTargetARB -> GLuint -> IO ()
+glBindBuffer target buffer = 
+  foreign FFI_C "glBindBuffer" ( Int -> GLuint -> IO ()) (toGlInt target) buffer
+
+
+
+glDeleteBuffers : GLsizei -> (List GLuint) -> IO ()
+glDeleteBuffers n buffers = 
+   do buffers' <- intsToBuffer buffers
+      res <- foreign FFI_C "glDeleteBuffers" ( GLsizei -> Ptr -> IO ()) n buffers' 
+      free buffers'
+      pure ()
 
 
 
@@ -1202,9 +1623,9 @@ glGenBuffers n =
 
 
 
-glBindBuffer : BufferTargetARB -> GLuint -> IO ()
-glBindBuffer target buffer = 
-  foreign FFI_C "glBindBuffer" ( Int -> GLuint -> IO ()) (toGlInt target) buffer
+glIsBuffer : GLuint -> IO GLboolean
+glIsBuffer buffer = 
+  foreign FFI_C "glIsBuffer" ( GLuint -> IO GLboolean) buffer
 
 
 
@@ -1214,32 +1635,45 @@ glBufferData target size data' usage =
 
 
 
-glEnableVertexAttribArray : GLuint -> IO ()
-glEnableVertexAttribArray index = 
-  foreign FFI_C "glEnableVertexAttribArray" ( GLuint -> IO ()) index
+glMapBuffer : BufferTargetARB -> BufferAccessARB -> IO ()
+glMapBuffer target access = 
+  foreign FFI_C "glMapBuffer" ( Int -> Int -> IO ()) (toGlInt target) (toGlInt access)
 
 
 
-glVertexAttribPointer : GLuint -> GLint -> VertexAttribPointerType -> GLboolean -> GLsizei -> Ptr -> IO ()
-glVertexAttribPointer index size type normalized stride pointer = 
-  foreign FFI_C "glVertexAttribPointer" ( GLuint -> GLint -> Int -> GLboolean -> GLsizei -> Ptr -> IO ()) index size (toGlInt type) normalized stride pointer
+glUnmapBuffer : BufferTargetARB -> IO GLboolean
+glUnmapBuffer target = 
+  foreign FFI_C "glUnmapBuffer" ( Int -> IO GLboolean) (toGlInt target)
 
 
 
-glCreateShader : GLenum -> IO GLuint
-glCreateShader shaderType = 
-  foreign FFI_C "glCreateShader" ( GLenum -> IO GLuint) shaderType
+glStencilOpSeparate : StencilFaceDirection -> StencilOp -> StencilOp -> StencilOp -> IO ()
+glStencilOpSeparate face sfail dpfail dppass = 
+  foreign FFI_C "glStencilOpSeparate" ( Int -> Int -> Int -> Int -> IO ()) (toGlInt face) (toGlInt sfail) (toGlInt dpfail) (toGlInt dppass)
 
 
 
-glShaderSource : GLuint -> GLsizei -> (List String) -> (List GLint) -> IO ()
-glShaderSource shader count string length' = 
-   do string' <- stringsToBuffer string
-      length'' <- intsToBuffer length'
-      res <- foreign FFI_C "glShaderSource" ( GLuint -> GLsizei -> Ptr -> Ptr -> IO ()) shader count string' length'' 
-      freeStringBuffer string' (cast (length string))
-      free length''
-      pure ()
+glStencilFuncSeparate : StencilFaceDirection -> StencilFunction -> GLint -> GLuint -> IO ()
+glStencilFuncSeparate face func ref mask = 
+  foreign FFI_C "glStencilFuncSeparate" ( Int -> Int -> GLint -> GLuint -> IO ()) (toGlInt face) (toGlInt func) ref mask
+
+
+
+glStencilMaskSeparate : StencilFaceDirection -> GLuint -> IO ()
+glStencilMaskSeparate face mask = 
+  foreign FFI_C "glStencilMaskSeparate" ( Int -> GLuint -> IO ()) (toGlInt face) mask
+
+
+
+glAttachShader : GLuint -> GLuint -> IO ()
+glAttachShader program shader = 
+  foreign FFI_C "glAttachShader" ( GLuint -> GLuint -> IO ()) program shader
+
+
+
+glBindAttribLocation : GLuint -> GLuint -> String -> IO ()
+glBindAttribLocation program index name = 
+  foreign FFI_C "glBindAttribLocation" ( GLuint -> GLuint -> String -> IO ()) program index name
 
 
 
@@ -1255,21 +1689,45 @@ glCreateProgram =
 
 
 
-glAttachShader : GLuint -> GLuint -> IO ()
-glAttachShader program shader = 
-  foreign FFI_C "glAttachShader" ( GLuint -> GLuint -> IO ()) program shader
+glCreateShader : GLenum -> IO GLuint
+glCreateShader shaderType = 
+  foreign FFI_C "glCreateShader" ( GLenum -> IO GLuint) shaderType
 
 
 
-glLinkProgram : GLuint -> IO ()
-glLinkProgram program = 
-  foreign FFI_C "glLinkProgram" ( GLuint -> IO ()) program
+glDeleteProgram : GLuint -> IO ()
+glDeleteProgram program = 
+  foreign FFI_C "glDeleteProgram" ( GLuint -> IO ()) program
 
 
 
-glGetError : IO GLenum
-glGetError = 
-  foreign FFI_C "glGetError" (IO GLenum)
+glDeleteShader : GLuint -> IO ()
+glDeleteShader shader = 
+  foreign FFI_C "glDeleteShader" ( GLuint -> IO ()) shader
+
+
+
+glDetachShader : GLuint -> GLuint -> IO ()
+glDetachShader program shader = 
+  foreign FFI_C "glDetachShader" ( GLuint -> GLuint -> IO ()) program shader
+
+
+
+glDisableVertexAttribArray : GLuint -> IO ()
+glDisableVertexAttribArray index = 
+  foreign FFI_C "glDisableVertexAttribArray" ( GLuint -> IO ()) index
+
+
+
+glEnableVertexAttribArray : GLuint -> IO ()
+glEnableVertexAttribArray index = 
+  foreign FFI_C "glEnableVertexAttribArray" ( GLuint -> IO ()) index
+
+
+
+glGetAttribLocation : GLuint -> String -> IO GLint
+glGetAttribLocation program name = 
+  foreign FFI_C "glGetAttribLocation" ( GLuint -> String -> IO GLint) program name
 
 
 
@@ -1279,10 +1737,102 @@ glGetUniformLocation program name =
 
 
 
-glUniformMatrix4fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
-glUniformMatrix4fv location count transpose value = 
+glIsProgram : GLuint -> IO GLboolean
+glIsProgram program = 
+  foreign FFI_C "glIsProgram" ( GLuint -> IO GLboolean) program
+
+
+
+glIsShader : GLuint -> IO GLboolean
+glIsShader shader = 
+  foreign FFI_C "glIsShader" ( GLuint -> IO GLboolean) shader
+
+
+
+glLinkProgram : GLuint -> IO ()
+glLinkProgram program = 
+  foreign FFI_C "glLinkProgram" ( GLuint -> IO ()) program
+
+
+
+glShaderSource : GLuint -> GLsizei -> (List String) -> (List GLint) -> IO ()
+glShaderSource shader count string length' = 
+   do string' <- stringsToBuffer string
+      length'' <- intsToBuffer length'
+      res <- foreign FFI_C "glShaderSource" ( GLuint -> GLsizei -> Ptr -> Ptr -> IO ()) shader count string' length'' 
+      freeStringBuffer string' (cast (length string))
+      free length''
+      pure ()
+
+
+
+glUseProgram : GLuint -> IO ()
+glUseProgram program = 
+  foreign FFI_C "glUseProgram" ( GLuint -> IO ()) program
+
+
+
+glUniform1f : GLint -> GLfloat -> IO ()
+glUniform1f location v0 = 
+  foreign FFI_C "glUniform1f" ( GLint -> GLfloat -> IO ()) location v0
+
+
+
+glUniform2f : GLint -> GLfloat -> GLfloat -> IO ()
+glUniform2f location v0 v1 = 
+  foreign FFI_C "glUniform2f" ( GLint -> GLfloat -> GLfloat -> IO ()) location v0 v1
+
+
+
+glUniform3f : GLint -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glUniform3f location v0 v1 v2 = 
+  foreign FFI_C "glUniform3f" ( GLint -> GLfloat -> GLfloat -> GLfloat -> IO ()) location v0 v1 v2
+
+
+
+glUniform4f : GLint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glUniform4f location v0 v1 v2 v3 = 
+  foreign FFI_C "glUniform4f" ( GLint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) location v0 v1 v2 v3
+
+
+
+glUniform1i : GLint -> GLint -> IO ()
+glUniform1i location v0 = 
+  foreign FFI_C "glUniform1i" ( GLint -> GLint -> IO ()) location v0
+
+
+
+glUniform2i : GLint -> GLint -> GLint -> IO ()
+glUniform2i location v0 v1 = 
+  foreign FFI_C "glUniform2i" ( GLint -> GLint -> GLint -> IO ()) location v0 v1
+
+
+
+glUniform3i : GLint -> GLint -> GLint -> GLint -> IO ()
+glUniform3i location v0 v1 v2 = 
+  foreign FFI_C "glUniform3i" ( GLint -> GLint -> GLint -> GLint -> IO ()) location v0 v1 v2
+
+
+
+glUniform4i : GLint -> GLint -> GLint -> GLint -> GLint -> IO ()
+glUniform4i location v0 v1 v2 v3 = 
+  foreign FFI_C "glUniform4i" ( GLint -> GLint -> GLint -> GLint -> GLint -> IO ()) location v0 v1 v2 v3
+
+
+
+glUniform1fv : GLint -> GLsizei -> (List GLfloat) -> IO ()
+glUniform1fv location count value = 
    do value' <- floatsToBuffer value
-      res <- foreign FFI_C "glUniformMatrix4fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      res <- foreign FFI_C "glUniform1fv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform2fv : GLint -> GLsizei -> (List GLfloat) -> IO ()
+glUniform2fv location count value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniform2fv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
       free value'
       pure ()
 
@@ -1297,36 +1847,781 @@ glUniform3fv location count value =
 
 
 
-glUniform1f : GLint -> GLfloat -> IO ()
-glUniform1f location v0 = 
-  foreign FFI_C "glUniform1f" ( GLint -> GLfloat -> IO ()) location v0
-
-
-
-glDetachShader : GLuint -> GLuint -> IO ()
-glDetachShader program shader = 
-  foreign FFI_C "glDetachShader" ( GLuint -> GLuint -> IO ()) program shader
-
-
-
-glDeleteProgram : GLuint -> IO ()
-glDeleteProgram program = 
-  foreign FFI_C "glDeleteProgram" ( GLuint -> IO ()) program
-
-
-
-glDisableVertexAttribArray : GLuint -> IO ()
-glDisableVertexAttribArray index = 
-  foreign FFI_C "glDisableVertexAttribArray" ( GLuint -> IO ()) index
-
-
-
-glDeleteBuffers : GLsizei -> (List GLuint) -> IO ()
-glDeleteBuffers n buffers = 
-   do buffers' <- intsToBuffer buffers
-      res <- foreign FFI_C "glDeleteBuffers" ( GLsizei -> Ptr -> IO ()) n buffers' 
-      free buffers'
+glUniform4fv : GLint -> GLsizei -> (List GLfloat) -> IO ()
+glUniform4fv location count value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniform4fv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
       pure ()
+
+
+
+glUniform1iv : GLint -> GLsizei -> (List GLint) -> IO ()
+glUniform1iv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform1iv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform2iv : GLint -> GLsizei -> (List GLint) -> IO ()
+glUniform2iv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform2iv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform3iv : GLint -> GLsizei -> (List GLint) -> IO ()
+glUniform3iv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform3iv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform4iv : GLint -> GLsizei -> (List GLint) -> IO ()
+glUniform4iv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform4iv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix2fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix2fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix2fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix3fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix3fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix3fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix4fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix4fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix4fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glValidateProgram : GLuint -> IO ()
+glValidateProgram program = 
+  foreign FFI_C "glValidateProgram" ( GLuint -> IO ()) program
+
+
+
+glVertexAttrib1d : GLuint -> GLdouble -> IO ()
+glVertexAttrib1d index x = 
+  foreign FFI_C "glVertexAttrib1d" ( GLuint -> GLdouble -> IO ()) index x
+
+
+
+glVertexAttrib1dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttrib1dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttrib1dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib1f : GLuint -> GLfloat -> IO ()
+glVertexAttrib1f index x = 
+  foreign FFI_C "glVertexAttrib1f" ( GLuint -> GLfloat -> IO ()) index x
+
+
+
+glVertexAttrib1fv : GLuint -> (List GLfloat) -> IO ()
+glVertexAttrib1fv index v = 
+   do v' <- floatsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib1fv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib1s : GLuint -> GLshort -> IO ()
+glVertexAttrib1s index x = 
+  foreign FFI_C "glVertexAttrib1s" ( GLuint -> GLshort -> IO ()) index x
+
+
+
+glVertexAttrib1sv : GLuint -> (List GLshort) -> IO ()
+glVertexAttrib1sv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib1sv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib2d : GLuint -> GLdouble -> GLdouble -> IO ()
+glVertexAttrib2d index x y = 
+  foreign FFI_C "glVertexAttrib2d" ( GLuint -> GLdouble -> GLdouble -> IO ()) index x y
+
+
+
+glVertexAttrib2dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttrib2dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttrib2dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib2f : GLuint -> GLfloat -> GLfloat -> IO ()
+glVertexAttrib2f index x y = 
+  foreign FFI_C "glVertexAttrib2f" ( GLuint -> GLfloat -> GLfloat -> IO ()) index x y
+
+
+
+glVertexAttrib2fv : GLuint -> (List GLfloat) -> IO ()
+glVertexAttrib2fv index v = 
+   do v' <- floatsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib2fv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib2s : GLuint -> GLshort -> GLshort -> IO ()
+glVertexAttrib2s index x y = 
+  foreign FFI_C "glVertexAttrib2s" ( GLuint -> GLshort -> GLshort -> IO ()) index x y
+
+
+
+glVertexAttrib2sv : GLuint -> (List GLshort) -> IO ()
+glVertexAttrib2sv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib2sv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib3d : GLuint -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glVertexAttrib3d index x y z = 
+  foreign FFI_C "glVertexAttrib3d" ( GLuint -> GLdouble -> GLdouble -> GLdouble -> IO ()) index x y z
+
+
+
+glVertexAttrib3dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttrib3dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttrib3dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib3f : GLuint -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glVertexAttrib3f index x y z = 
+  foreign FFI_C "glVertexAttrib3f" ( GLuint -> GLfloat -> GLfloat -> GLfloat -> IO ()) index x y z
+
+
+
+glVertexAttrib3fv : GLuint -> (List GLfloat) -> IO ()
+glVertexAttrib3fv index v = 
+   do v' <- floatsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib3fv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib3s : GLuint -> GLshort -> GLshort -> GLshort -> IO ()
+glVertexAttrib3s index x y z = 
+  foreign FFI_C "glVertexAttrib3s" ( GLuint -> GLshort -> GLshort -> GLshort -> IO ()) index x y z
+
+
+
+glVertexAttrib3sv : GLuint -> (List GLshort) -> IO ()
+glVertexAttrib3sv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib3sv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4Niv : GLuint -> (List GLint) -> IO ()
+glVertexAttrib4Niv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4Niv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4Nsv : GLuint -> (List GLshort) -> IO ()
+glVertexAttrib4Nsv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4Nsv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4Nub : GLuint -> GLubyte -> GLubyte -> GLubyte -> GLubyte -> IO ()
+glVertexAttrib4Nub index x y z w = 
+  foreign FFI_C "glVertexAttrib4Nub" ( GLuint -> GLubyte -> GLubyte -> GLubyte -> GLubyte -> IO ()) index x y z w
+
+
+
+glVertexAttrib4Nuiv : GLuint -> (List GLuint) -> IO ()
+glVertexAttrib4Nuiv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4Nuiv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4Nusv : GLuint -> (List GLushort) -> IO ()
+glVertexAttrib4Nusv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4Nusv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4d : GLuint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glVertexAttrib4d index x y z w = 
+  foreign FFI_C "glVertexAttrib4d" ( GLuint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()) index x y z w
+
+
+
+glVertexAttrib4dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttrib4dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4f : GLuint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glVertexAttrib4f index x y z w = 
+  foreign FFI_C "glVertexAttrib4f" ( GLuint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) index x y z w
+
+
+
+glVertexAttrib4fv : GLuint -> (List GLfloat) -> IO ()
+glVertexAttrib4fv index v = 
+   do v' <- floatsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4fv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4iv : GLuint -> (List GLint) -> IO ()
+glVertexAttrib4iv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4iv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4s : GLuint -> GLshort -> GLshort -> GLshort -> GLshort -> IO ()
+glVertexAttrib4s index x y z w = 
+  foreign FFI_C "glVertexAttrib4s" ( GLuint -> GLshort -> GLshort -> GLshort -> GLshort -> IO ()) index x y z w
+
+
+
+glVertexAttrib4sv : GLuint -> (List GLshort) -> IO ()
+glVertexAttrib4sv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4sv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4uiv : GLuint -> (List GLuint) -> IO ()
+glVertexAttrib4uiv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4uiv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttrib4usv : GLuint -> (List GLushort) -> IO ()
+glVertexAttrib4usv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttrib4usv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribPointer : GLuint -> GLint -> VertexAttribPointerType -> GLboolean -> GLsizei -> Ptr -> IO ()
+glVertexAttribPointer index size type normalized stride pointer = 
+  foreign FFI_C "glVertexAttribPointer" ( GLuint -> GLint -> Int -> GLboolean -> GLsizei -> Ptr -> IO ()) index size (toGlInt type) normalized stride pointer
+
+
+
+glUniformMatrix2x3fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix2x3fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix2x3fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix3x2fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix3x2fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix3x2fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix2x4fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix2x4fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix2x4fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix4x2fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix4x2fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix4x2fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix3x4fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix3x4fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix3x4fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix4x3fv : GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glUniformMatrix4x3fv location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glUniformMatrix4x3fv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glColorMaski : GLuint -> GLboolean -> GLboolean -> GLboolean -> GLboolean -> IO ()
+glColorMaski index r g b a = 
+  foreign FFI_C "glColorMaski" ( GLuint -> GLboolean -> GLboolean -> GLboolean -> GLboolean -> IO ()) index r g b a
+
+
+
+glEnablei : GLenum -> GLuint -> IO ()
+glEnablei target index = 
+  foreign FFI_C "glEnablei" ( GLenum -> GLuint -> IO ()) target index
+
+
+
+glDisablei : GLenum -> GLuint -> IO ()
+glDisablei target index = 
+  foreign FFI_C "glDisablei" ( GLenum -> GLuint -> IO ()) target index
+
+
+
+glIsEnabledi : GLenum -> GLuint -> IO GLboolean
+glIsEnabledi target index = 
+  foreign FFI_C "glIsEnabledi" ( GLenum -> GLuint -> IO GLboolean) target index
+
+
+
+glBeginTransformFeedback : GLenum -> IO ()
+glBeginTransformFeedback primitiveMode = 
+  foreign FFI_C "glBeginTransformFeedback" ( GLenum -> IO ()) primitiveMode
+
+
+
+glEndTransformFeedback : IO ()
+glEndTransformFeedback = 
+  foreign FFI_C "glEndTransformFeedback" (IO ())
+
+
+
+glBindBufferBase : GLenum -> GLuint -> GLuint -> IO ()
+glBindBufferBase target index buffer = 
+  foreign FFI_C "glBindBufferBase" ( GLenum -> GLuint -> GLuint -> IO ()) target index buffer
+
+
+
+glTransformFeedbackVaryings : GLuint -> GLsizei -> String -> GLenum -> IO ()
+glTransformFeedbackVaryings program count varyings bufferMode = 
+  foreign FFI_C "glTransformFeedbackVaryings" ( GLuint -> GLsizei -> String -> GLenum -> IO ()) program count varyings bufferMode
+
+
+
+glEndConditionalRender : IO ()
+glEndConditionalRender = 
+  foreign FFI_C "glEndConditionalRender" (IO ())
+
+
+
+glVertexAttribI1i : GLuint -> GLint -> IO ()
+glVertexAttribI1i index x = 
+  foreign FFI_C "glVertexAttribI1i" ( GLuint -> GLint -> IO ()) index x
+
+
+
+glVertexAttribI2i : GLuint -> GLint -> GLint -> IO ()
+glVertexAttribI2i index x y = 
+  foreign FFI_C "glVertexAttribI2i" ( GLuint -> GLint -> GLint -> IO ()) index x y
+
+
+
+glVertexAttribI3i : GLuint -> GLint -> GLint -> GLint -> IO ()
+glVertexAttribI3i index x y z = 
+  foreign FFI_C "glVertexAttribI3i" ( GLuint -> GLint -> GLint -> GLint -> IO ()) index x y z
+
+
+
+glVertexAttribI4i : GLuint -> GLint -> GLint -> GLint -> GLint -> IO ()
+glVertexAttribI4i index x y z w = 
+  foreign FFI_C "glVertexAttribI4i" ( GLuint -> GLint -> GLint -> GLint -> GLint -> IO ()) index x y z w
+
+
+
+glVertexAttribI1ui : GLuint -> GLuint -> IO ()
+glVertexAttribI1ui index x = 
+  foreign FFI_C "glVertexAttribI1ui" ( GLuint -> GLuint -> IO ()) index x
+
+
+
+glVertexAttribI2ui : GLuint -> GLuint -> GLuint -> IO ()
+glVertexAttribI2ui index x y = 
+  foreign FFI_C "glVertexAttribI2ui" ( GLuint -> GLuint -> GLuint -> IO ()) index x y
+
+
+
+glVertexAttribI3ui : GLuint -> GLuint -> GLuint -> GLuint -> IO ()
+glVertexAttribI3ui index x y z = 
+  foreign FFI_C "glVertexAttribI3ui" ( GLuint -> GLuint -> GLuint -> GLuint -> IO ()) index x y z
+
+
+
+glVertexAttribI4ui : GLuint -> GLuint -> GLuint -> GLuint -> GLuint -> IO ()
+glVertexAttribI4ui index x y z w = 
+  foreign FFI_C "glVertexAttribI4ui" ( GLuint -> GLuint -> GLuint -> GLuint -> GLuint -> IO ()) index x y z w
+
+
+
+glVertexAttribI1iv : GLuint -> (List GLint) -> IO ()
+glVertexAttribI1iv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI1iv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI2iv : GLuint -> (List GLint) -> IO ()
+glVertexAttribI2iv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI2iv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI3iv : GLuint -> (List GLint) -> IO ()
+glVertexAttribI3iv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI3iv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI4iv : GLuint -> (List GLint) -> IO ()
+glVertexAttribI4iv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI4iv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI1uiv : GLuint -> (List GLuint) -> IO ()
+glVertexAttribI1uiv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI1uiv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI2uiv : GLuint -> (List GLuint) -> IO ()
+glVertexAttribI2uiv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI2uiv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI3uiv : GLuint -> (List GLuint) -> IO ()
+glVertexAttribI3uiv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI3uiv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI4uiv : GLuint -> (List GLuint) -> IO ()
+glVertexAttribI4uiv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI4uiv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI4sv : GLuint -> (List GLshort) -> IO ()
+glVertexAttribI4sv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI4sv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribI4usv : GLuint -> (List GLushort) -> IO ()
+glVertexAttribI4usv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glVertexAttribI4usv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glBindFragDataLocation : GLuint -> GLuint -> String -> IO ()
+glBindFragDataLocation program color name = 
+  foreign FFI_C "glBindFragDataLocation" ( GLuint -> GLuint -> String -> IO ()) program color name
+
+
+
+glGetFragDataLocation : GLuint -> String -> IO GLint
+glGetFragDataLocation program name = 
+  foreign FFI_C "glGetFragDataLocation" ( GLuint -> String -> IO GLint) program name
+
+
+
+glUniform1ui : GLint -> GLuint -> IO ()
+glUniform1ui location v0 = 
+  foreign FFI_C "glUniform1ui" ( GLint -> GLuint -> IO ()) location v0
+
+
+
+glUniform2ui : GLint -> GLuint -> GLuint -> IO ()
+glUniform2ui location v0 v1 = 
+  foreign FFI_C "glUniform2ui" ( GLint -> GLuint -> GLuint -> IO ()) location v0 v1
+
+
+
+glUniform3ui : GLint -> GLuint -> GLuint -> GLuint -> IO ()
+glUniform3ui location v0 v1 v2 = 
+  foreign FFI_C "glUniform3ui" ( GLint -> GLuint -> GLuint -> GLuint -> IO ()) location v0 v1 v2
+
+
+
+glUniform4ui : GLint -> GLuint -> GLuint -> GLuint -> GLuint -> IO ()
+glUniform4ui location v0 v1 v2 v3 = 
+  foreign FFI_C "glUniform4ui" ( GLint -> GLuint -> GLuint -> GLuint -> GLuint -> IO ()) location v0 v1 v2 v3
+
+
+
+glUniform1uiv : GLint -> GLsizei -> (List GLuint) -> IO ()
+glUniform1uiv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform1uiv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform2uiv : GLint -> GLsizei -> (List GLuint) -> IO ()
+glUniform2uiv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform2uiv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform3uiv : GLint -> GLsizei -> (List GLuint) -> IO ()
+glUniform3uiv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform3uiv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform4uiv : GLint -> GLsizei -> (List GLuint) -> IO ()
+glUniform4uiv location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glUniform4uiv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glTexParameterIiv : TextureTarget -> TextureParameterName -> (List GLint) -> IO ()
+glTexParameterIiv target pname params = 
+   do params' <- intsToBuffer params
+      res <- foreign FFI_C "glTexParameterIiv" ( Int -> Int -> Ptr -> IO ()) (toGlInt target) (toGlInt pname) params' 
+      free params'
+      pure ()
+
+
+
+glTexParameterIuiv : TextureTarget -> TextureParameterName -> (List GLuint) -> IO ()
+glTexParameterIuiv target pname params = 
+   do params' <- intsToBuffer params
+      res <- foreign FFI_C "glTexParameterIuiv" ( Int -> Int -> Ptr -> IO ()) (toGlInt target) (toGlInt pname) params' 
+      free params'
+      pure ()
+
+
+
+glClearBufferiv : GLenum -> GLint -> (List GLint) -> IO ()
+glClearBufferiv buffer drawbuffer value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glClearBufferiv" ( GLenum -> GLint -> Ptr -> IO ()) buffer drawbuffer value' 
+      free value'
+      pure ()
+
+
+
+glClearBufferuiv : GLenum -> GLint -> (List GLuint) -> IO ()
+glClearBufferuiv buffer drawbuffer value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glClearBufferuiv" ( GLenum -> GLint -> Ptr -> IO ()) buffer drawbuffer value' 
+      free value'
+      pure ()
+
+
+
+glClearBufferfv : GLenum -> GLint -> (List GLfloat) -> IO ()
+glClearBufferfv buffer drawbuffer value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glClearBufferfv" ( GLenum -> GLint -> Ptr -> IO ()) buffer drawbuffer value' 
+      free value'
+      pure ()
+
+
+
+glClearBufferfi : GLenum -> GLint -> GLfloat -> GLint -> IO ()
+glClearBufferfi buffer drawbuffer depth stencil = 
+  foreign FFI_C "glClearBufferfi" ( GLenum -> GLint -> GLfloat -> GLint -> IO ()) buffer drawbuffer depth stencil
+
+
+
+glGetStringi : GLenum -> GLuint -> IO String
+glGetStringi name index = 
+  foreign FFI_C "glGetStringi" ( GLenum -> GLuint -> IO String) name index
+
+
+
+glIsRenderbuffer : GLuint -> IO GLboolean
+glIsRenderbuffer renderbuffer = 
+  foreign FFI_C "glIsRenderbuffer" ( GLuint -> IO GLboolean) renderbuffer
+
+
+
+glDeleteRenderbuffers : GLsizei -> (List GLuint) -> IO ()
+glDeleteRenderbuffers n renderbuffers = 
+   do renderbuffers' <- intsToBuffer renderbuffers
+      res <- foreign FFI_C "glDeleteRenderbuffers" ( GLsizei -> Ptr -> IO ()) n renderbuffers' 
+      free renderbuffers'
+      pure ()
+
+
+
+glGenRenderbuffers : GLsizei -> IO (List GLuint)
+glGenRenderbuffers n = 
+  do ptr <- intBuffer n
+     foreign FFI_C "glGenRenderbuffers" ( GLsizei -> Ptr -> IO ()) n ptr 
+     intBufferToList ptr n
+
+
+
+glIsFramebuffer : GLuint -> IO GLboolean
+glIsFramebuffer framebuffer = 
+  foreign FFI_C "glIsFramebuffer" ( GLuint -> IO GLboolean) framebuffer
+
+
+
+glDeleteFramebuffers : GLsizei -> (List GLuint) -> IO ()
+glDeleteFramebuffers n framebuffers = 
+   do framebuffers' <- intsToBuffer framebuffers
+      res <- foreign FFI_C "glDeleteFramebuffers" ( GLsizei -> Ptr -> IO ()) n framebuffers' 
+      free framebuffers'
+      pure ()
+
+
+
+glGenFramebuffers : GLsizei -> IO (List GLuint)
+glGenFramebuffers n = 
+  do ptr <- intBuffer n
+     foreign FFI_C "glGenFramebuffers" ( GLsizei -> Ptr -> IO ()) n ptr 
+     intBufferToList ptr n
+
+
+
+glGenerateMipmap : GLenum -> IO ()
+glGenerateMipmap target = 
+  foreign FFI_C "glGenerateMipmap" ( GLenum -> IO ()) target
+
+
+
+glBlitFramebuffer : GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> ClearBufferMask -> GLenum -> IO ()
+glBlitFramebuffer srcX0 srcY0 srcX1 srcY1 dstX0 dstY0 dstX1 dstY1 mask filter = 
+  foreign FFI_C "glBlitFramebuffer" ( GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> GLint -> Int -> GLenum -> IO ()) srcX0 srcY0 srcX1 srcY1 dstX0 dstY0 dstX1 dstY1 (toGlInt mask) filter
+
+
+
+glRenderbufferStorageMultisample : GLenum -> GLsizei -> GLenum -> GLsizei -> GLsizei -> IO ()
+glRenderbufferStorageMultisample target samples internalformat width height = 
+  foreign FFI_C "glRenderbufferStorageMultisample" ( GLenum -> GLsizei -> GLenum -> GLsizei -> GLsizei -> IO ()) target samples internalformat width height
+
+
+
+glBindVertexArray : GLuint -> IO ()
+glBindVertexArray array = 
+  foreign FFI_C "glBindVertexArray" ( GLuint -> IO ()) array
 
 
 
@@ -1339,84 +2634,1190 @@ glDeleteVertexArrays n arrays =
 
 
 
-glClearColor : GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
-glClearColor red green blue alpha = 
-  foreign FFI_C "glClearColor" ( GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) red green blue alpha
+glGenVertexArrays : GLsizei -> IO (List GLuint)
+glGenVertexArrays n = 
+  do ptr <- intBuffer n
+     foreign FFI_C "glGenVertexArrays" ( GLsizei -> Ptr -> IO ()) n ptr 
+     intBufferToList ptr n
 
 
 
-glClear : ClearBufferMask -> IO ()
-glClear mask = 
-  foreign FFI_C "glClear" ( Int -> IO ()) (toGlInt mask)
+glIsVertexArray : GLuint -> IO GLboolean
+glIsVertexArray array = 
+  foreign FFI_C "glIsVertexArray" ( GLuint -> IO GLboolean) array
 
 
 
-glBindTexture : TextureTarget -> GLuint -> IO ()
-glBindTexture target texture = 
-  foreign FFI_C "glBindTexture" ( Int -> GLuint -> IO ()) (toGlInt target) texture
+glDrawArraysInstanced : PrimitiveType -> GLint -> GLsizei -> GLsizei -> IO ()
+glDrawArraysInstanced mode first count instancecount = 
+  foreign FFI_C "glDrawArraysInstanced" ( Int -> GLint -> GLsizei -> GLsizei -> IO ()) (toGlInt mode) first count instancecount
 
 
 
-glDrawElements : PrimitiveType -> GLsizei -> DrawElementsType -> Ptr -> IO ()
-glDrawElements mode count type indices = 
-  foreign FFI_C "glDrawElements" ( Int -> GLsizei -> Int -> Ptr -> IO ()) (toGlInt mode) count (toGlInt type) indices
+glDrawElementsInstanced : PrimitiveType -> GLsizei -> DrawElementsType -> Ptr -> GLsizei -> IO ()
+glDrawElementsInstanced mode count type indices instancecount = 
+  foreign FFI_C "glDrawElementsInstanced" ( Int -> GLsizei -> Int -> Ptr -> GLsizei -> IO ()) (toGlInt mode) count (toGlInt type) indices instancecount
 
 
 
-glDrawArrays : PrimitiveType -> GLint -> GLsizei -> IO ()
-glDrawArrays mode first count = 
-  foreign FFI_C "glDrawArrays" ( Int -> GLint -> GLsizei -> IO ()) (toGlInt mode) first count
+glTexBuffer : TextureTarget -> GLenum -> GLuint -> IO ()
+glTexBuffer target internalformat buffer = 
+  foreign FFI_C "glTexBuffer" ( Int -> GLenum -> GLuint -> IO ()) (toGlInt target) internalformat buffer
 
 
 
-glEnable : EnableCap -> IO ()
-glEnable cap = 
-  foreign FFI_C "glEnable" ( Int -> IO ()) (toGlInt cap)
+glPrimitiveRestartIndex : GLuint -> IO ()
+glPrimitiveRestartIndex index = 
+  foreign FFI_C "glPrimitiveRestartIndex" ( GLuint -> IO ()) index
 
 
 
-glDepthFunc : DepthFunction -> IO ()
-glDepthFunc func = 
-  foreign FFI_C "glDepthFunc" ( Int -> IO ()) (toGlInt func)
+glGetUniformBlockIndex : GLuint -> String -> IO GLuint
+glGetUniformBlockIndex program uniformBlockName = 
+  foreign FFI_C "glGetUniformBlockIndex" ( GLuint -> String -> IO GLuint) program uniformBlockName
 
 
 
-glActiveTexture : GLsizei -> IO ()
-glActiveTexture texture = 
-  foreign FFI_C "glActiveTexture" ( GLsizei -> IO ()) texture
+glUniformBlockBinding : GLuint -> GLuint -> GLuint -> IO ()
+glUniformBlockBinding program uniformBlockIndex uniformBlockBinding = 
+  foreign FFI_C "glUniformBlockBinding" ( GLuint -> GLuint -> GLuint -> IO ()) program uniformBlockIndex uniformBlockBinding
 
 
 
-glTexParameteri : TextureTarget -> TextureParameterName -> GLint -> IO ()
-glTexParameteri target pname param = 
-  foreign FFI_C "glTexParameteri" ( Int -> Int -> GLint -> IO ()) (toGlInt target) (toGlInt pname) param
+glDrawElementsBaseVertex : PrimitiveType -> GLsizei -> DrawElementsType -> Ptr -> GLint -> IO ()
+glDrawElementsBaseVertex mode count type indices basevertex = 
+  foreign FFI_C "glDrawElementsBaseVertex" ( Int -> GLsizei -> Int -> Ptr -> GLint -> IO ()) (toGlInt mode) count (toGlInt type) indices basevertex
 
 
 
-glDeleteTextures : GLsizei -> (List GLuint) -> IO ()
-glDeleteTextures n textures = 
-   do textures' <- intsToBuffer textures
-      res <- foreign FFI_C "glDeleteTextures" ( GLsizei -> Ptr -> IO ()) n textures' 
-      free textures'
+glDrawRangeElementsBaseVertex : PrimitiveType -> GLuint -> GLuint -> GLsizei -> DrawElementsType -> Ptr -> GLint -> IO ()
+glDrawRangeElementsBaseVertex mode start end count type indices basevertex = 
+  foreign FFI_C "glDrawRangeElementsBaseVertex" ( Int -> GLuint -> GLuint -> GLsizei -> Int -> Ptr -> GLint -> IO ()) (toGlInt mode) start end count (toGlInt type) indices basevertex
+
+
+
+glDrawElementsInstancedBaseVertex : PrimitiveType -> GLsizei -> DrawElementsType -> Ptr -> GLsizei -> GLint -> IO ()
+glDrawElementsInstancedBaseVertex mode count type indices instancecount basevertex = 
+  foreign FFI_C "glDrawElementsInstancedBaseVertex" ( Int -> GLsizei -> Int -> Ptr -> GLsizei -> GLint -> IO ()) (toGlInt mode) count (toGlInt type) indices instancecount basevertex
+
+
+
+glMultiDrawElementsBaseVertex : PrimitiveType -> (List GLsizei) -> DrawElementsType -> Ptr -> GLsizei -> (List GLint) -> IO ()
+glMultiDrawElementsBaseVertex mode count type indices drawcount basevertex = 
+   do count' <- intsToBuffer count
+      basevertex' <- intsToBuffer basevertex
+      res <- foreign FFI_C "glMultiDrawElementsBaseVertex" ( Int -> Ptr -> Int -> Ptr -> GLsizei -> Ptr -> IO ()) (toGlInt mode) count' (toGlInt type) indices drawcount basevertex' 
+      free count'
+      free basevertex'
       pure ()
 
 
 
-glUseProgram : GLuint -> IO ()
-glUseProgram program = 
-  foreign FFI_C "glUseProgram" ( GLuint -> IO ()) program
+glProvokingVertex : GLenum -> IO ()
+glProvokingVertex provokeMode = 
+  foreign FFI_C "glProvokingVertex" ( GLenum -> IO ()) provokeMode
 
 
 
-glDeleteShader : GLuint -> IO ()
-glDeleteShader shader = 
-  foreign FFI_C "glDeleteShader" ( GLuint -> IO ()) shader
+glFramebufferTexture : GLenum -> GLenum -> GLuint -> GLint -> IO ()
+glFramebufferTexture target attachment texture level = 
+  foreign FFI_C "glFramebufferTexture" ( GLenum -> GLenum -> GLuint -> GLint -> IO ()) target attachment texture level
 
 
 
-glGetString : StringName -> IO String
-glGetString name = 
-  foreign FFI_C "glGetString" ( Int -> IO String) (toGlInt name)
+glTexImage2DMultisample : GLenum -> GLsizei -> GLenum -> GLsizei -> GLsizei -> GLboolean -> IO ()
+glTexImage2DMultisample target samples internalformat width height fixedsamplelocations = 
+  foreign FFI_C "glTexImage2DMultisample" ( GLenum -> GLsizei -> GLenum -> GLsizei -> GLsizei -> GLboolean -> IO ()) target samples internalformat width height fixedsamplelocations
+
+
+
+glTexImage3DMultisample : GLenum -> GLsizei -> GLenum -> GLsizei -> GLsizei -> GLsizei -> GLboolean -> IO ()
+glTexImage3DMultisample target samples internalformat width height depth fixedsamplelocations = 
+  foreign FFI_C "glTexImage3DMultisample" ( GLenum -> GLsizei -> GLenum -> GLsizei -> GLsizei -> GLsizei -> GLboolean -> IO ()) target samples internalformat width height depth fixedsamplelocations
+
+
+
+glSampleMaski : GLuint -> GLbitfield -> IO ()
+glSampleMaski maskNumber mask = 
+  foreign FFI_C "glSampleMaski" ( GLuint -> GLbitfield -> IO ()) maskNumber mask
+
+
+
+glBindFragDataLocationIndexed : GLuint -> GLuint -> GLuint -> String -> IO ()
+glBindFragDataLocationIndexed program colorNumber index name = 
+  foreign FFI_C "glBindFragDataLocationIndexed" ( GLuint -> GLuint -> GLuint -> String -> IO ()) program colorNumber index name
+
+
+
+glGetFragDataIndex : GLuint -> String -> IO GLint
+glGetFragDataIndex program name = 
+  foreign FFI_C "glGetFragDataIndex" ( GLuint -> String -> IO GLint) program name
+
+
+
+glGenSamplers : GLsizei -> IO (List GLuint)
+glGenSamplers count = 
+  do ptr <- intBuffer count
+     foreign FFI_C "glGenSamplers" ( GLsizei -> Ptr -> IO ()) count ptr 
+     intBufferToList ptr count
+
+
+
+glDeleteSamplers : GLsizei -> (List GLuint) -> IO ()
+glDeleteSamplers count samplers = 
+   do samplers' <- intsToBuffer samplers
+      res <- foreign FFI_C "glDeleteSamplers" ( GLsizei -> Ptr -> IO ()) count samplers' 
+      free samplers'
+      pure ()
+
+
+
+glIsSampler : GLuint -> IO GLboolean
+glIsSampler sampler = 
+  foreign FFI_C "glIsSampler" ( GLuint -> IO GLboolean) sampler
+
+
+
+glBindSampler : GLuint -> GLuint -> IO ()
+glBindSampler unit sampler = 
+  foreign FFI_C "glBindSampler" ( GLuint -> GLuint -> IO ()) unit sampler
+
+
+
+glSamplerParameteri : GLuint -> GLenum -> GLint -> IO ()
+glSamplerParameteri sampler pname param = 
+  foreign FFI_C "glSamplerParameteri" ( GLuint -> GLenum -> GLint -> IO ()) sampler pname param
+
+
+
+glSamplerParameteriv : GLuint -> GLenum -> (List GLint) -> IO ()
+glSamplerParameteriv sampler pname param = 
+   do param' <- intsToBuffer param
+      res <- foreign FFI_C "glSamplerParameteriv" ( GLuint -> GLenum -> Ptr -> IO ()) sampler pname param' 
+      free param'
+      pure ()
+
+
+
+glSamplerParameterf : GLuint -> GLenum -> GLfloat -> IO ()
+glSamplerParameterf sampler pname param = 
+  foreign FFI_C "glSamplerParameterf" ( GLuint -> GLenum -> GLfloat -> IO ()) sampler pname param
+
+
+
+glSamplerParameterfv : GLuint -> GLenum -> (List GLfloat) -> IO ()
+glSamplerParameterfv sampler pname param = 
+   do param' <- floatsToBuffer param
+      res <- foreign FFI_C "glSamplerParameterfv" ( GLuint -> GLenum -> Ptr -> IO ()) sampler pname param' 
+      free param'
+      pure ()
+
+
+
+glSamplerParameterIiv : GLuint -> GLenum -> (List GLint) -> IO ()
+glSamplerParameterIiv sampler pname param = 
+   do param' <- intsToBuffer param
+      res <- foreign FFI_C "glSamplerParameterIiv" ( GLuint -> GLenum -> Ptr -> IO ()) sampler pname param' 
+      free param'
+      pure ()
+
+
+
+glSamplerParameterIuiv : GLuint -> GLenum -> (List GLuint) -> IO ()
+glSamplerParameterIuiv sampler pname param = 
+   do param' <- intsToBuffer param
+      res <- foreign FFI_C "glSamplerParameterIuiv" ( GLuint -> GLenum -> Ptr -> IO ()) sampler pname param' 
+      free param'
+      pure ()
+
+
+
+glQueryCounter : GLuint -> GLenum -> IO ()
+glQueryCounter id target = 
+  foreign FFI_C "glQueryCounter" ( GLuint -> GLenum -> IO ()) id target
+
+
+
+glVertexAttribDivisor : GLuint -> GLuint -> IO ()
+glVertexAttribDivisor index divisor = 
+  foreign FFI_C "glVertexAttribDivisor" ( GLuint -> GLuint -> IO ()) index divisor
+
+
+
+glVertexAttribP1ui : GLuint -> GLenum -> GLboolean -> GLuint -> IO ()
+glVertexAttribP1ui index type normalized value = 
+  foreign FFI_C "glVertexAttribP1ui" ( GLuint -> GLenum -> GLboolean -> GLuint -> IO ()) index type normalized value
+
+
+
+glVertexAttribP1uiv : GLuint -> GLenum -> GLboolean -> (List GLuint) -> IO ()
+glVertexAttribP1uiv index type normalized value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glVertexAttribP1uiv" ( GLuint -> GLenum -> GLboolean -> Ptr -> IO ()) index type normalized value' 
+      free value'
+      pure ()
+
+
+
+glVertexAttribP2ui : GLuint -> GLenum -> GLboolean -> GLuint -> IO ()
+glVertexAttribP2ui index type normalized value = 
+  foreign FFI_C "glVertexAttribP2ui" ( GLuint -> GLenum -> GLboolean -> GLuint -> IO ()) index type normalized value
+
+
+
+glVertexAttribP2uiv : GLuint -> GLenum -> GLboolean -> (List GLuint) -> IO ()
+glVertexAttribP2uiv index type normalized value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glVertexAttribP2uiv" ( GLuint -> GLenum -> GLboolean -> Ptr -> IO ()) index type normalized value' 
+      free value'
+      pure ()
+
+
+
+glVertexAttribP3ui : GLuint -> GLenum -> GLboolean -> GLuint -> IO ()
+glVertexAttribP3ui index type normalized value = 
+  foreign FFI_C "glVertexAttribP3ui" ( GLuint -> GLenum -> GLboolean -> GLuint -> IO ()) index type normalized value
+
+
+
+glVertexAttribP3uiv : GLuint -> GLenum -> GLboolean -> (List GLuint) -> IO ()
+glVertexAttribP3uiv index type normalized value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glVertexAttribP3uiv" ( GLuint -> GLenum -> GLboolean -> Ptr -> IO ()) index type normalized value' 
+      free value'
+      pure ()
+
+
+
+glVertexAttribP4ui : GLuint -> GLenum -> GLboolean -> GLuint -> IO ()
+glVertexAttribP4ui index type normalized value = 
+  foreign FFI_C "glVertexAttribP4ui" ( GLuint -> GLenum -> GLboolean -> GLuint -> IO ()) index type normalized value
+
+
+
+glVertexAttribP4uiv : GLuint -> GLenum -> GLboolean -> (List GLuint) -> IO ()
+glVertexAttribP4uiv index type normalized value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glVertexAttribP4uiv" ( GLuint -> GLenum -> GLboolean -> Ptr -> IO ()) index type normalized value' 
+      free value'
+      pure ()
+
+
+
+glMinSampleShading : GLfloat -> IO ()
+glMinSampleShading value = 
+  foreign FFI_C "glMinSampleShading" ( GLfloat -> IO ()) value
+
+
+
+glBlendEquationi : GLuint -> GLenum -> IO ()
+glBlendEquationi buf mode = 
+  foreign FFI_C "glBlendEquationi" ( GLuint -> GLenum -> IO ()) buf mode
+
+
+
+glBlendEquationSeparatei : GLuint -> GLenum -> GLenum -> IO ()
+glBlendEquationSeparatei buf modeRGB modeAlpha = 
+  foreign FFI_C "glBlendEquationSeparatei" ( GLuint -> GLenum -> GLenum -> IO ()) buf modeRGB modeAlpha
+
+
+
+glBlendFunci : GLuint -> GLenum -> GLenum -> IO ()
+glBlendFunci buf src dst = 
+  foreign FFI_C "glBlendFunci" ( GLuint -> GLenum -> GLenum -> IO ()) buf src dst
+
+
+
+glBlendFuncSeparatei : GLuint -> GLenum -> GLenum -> GLenum -> GLenum -> IO ()
+glBlendFuncSeparatei buf srcRGB dstRGB srcAlpha dstAlpha = 
+  foreign FFI_C "glBlendFuncSeparatei" ( GLuint -> GLenum -> GLenum -> GLenum -> GLenum -> IO ()) buf srcRGB dstRGB srcAlpha dstAlpha
+
+
+
+glDrawArraysIndirect : PrimitiveType -> Ptr -> IO ()
+glDrawArraysIndirect mode indirect = 
+  foreign FFI_C "glDrawArraysIndirect" ( Int -> Ptr -> IO ()) (toGlInt mode) indirect
+
+
+
+glDrawElementsIndirect : PrimitiveType -> GLenum -> Ptr -> IO ()
+glDrawElementsIndirect mode type indirect = 
+  foreign FFI_C "glDrawElementsIndirect" ( Int -> GLenum -> Ptr -> IO ()) (toGlInt mode) type indirect
+
+
+
+glUniform1d : GLint -> GLdouble -> IO ()
+glUniform1d location x = 
+  foreign FFI_C "glUniform1d" ( GLint -> GLdouble -> IO ()) location x
+
+
+
+glUniform2d : GLint -> GLdouble -> GLdouble -> IO ()
+glUniform2d location x y = 
+  foreign FFI_C "glUniform2d" ( GLint -> GLdouble -> GLdouble -> IO ()) location x y
+
+
+
+glUniform3d : GLint -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glUniform3d location x y z = 
+  foreign FFI_C "glUniform3d" ( GLint -> GLdouble -> GLdouble -> GLdouble -> IO ()) location x y z
+
+
+
+glUniform4d : GLint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glUniform4d location x y z w = 
+  foreign FFI_C "glUniform4d" ( GLint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()) location x y z w
+
+
+
+glUniform1dv : GLint -> GLsizei -> (List GLdouble) -> IO ()
+glUniform1dv location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniform1dv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform2dv : GLint -> GLsizei -> (List GLdouble) -> IO ()
+glUniform2dv location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniform2dv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform3dv : GLint -> GLsizei -> (List GLdouble) -> IO ()
+glUniform3dv location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniform3dv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniform4dv : GLint -> GLsizei -> (List GLdouble) -> IO ()
+glUniform4dv location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniform4dv" ( GLint -> GLsizei -> Ptr -> IO ()) location count value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix2dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix2dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix2dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix3dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix3dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix3dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix4dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix4dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix4dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix2x3dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix2x3dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix2x3dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix2x4dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix2x4dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix2x4dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix3x2dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix3x2dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix3x2dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix3x4dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix3x4dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix3x4dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix4x2dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix4x2dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix4x2dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glUniformMatrix4x3dv : GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glUniformMatrix4x3dv location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glUniformMatrix4x3dv" ( GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glGetSubroutineUniformLocation : GLuint -> GLenum -> String -> IO GLint
+glGetSubroutineUniformLocation program shadertype name = 
+  foreign FFI_C "glGetSubroutineUniformLocation" ( GLuint -> GLenum -> String -> IO GLint) program shadertype name
+
+
+
+glGetSubroutineIndex : GLuint -> GLenum -> String -> IO GLuint
+glGetSubroutineIndex program shadertype name = 
+  foreign FFI_C "glGetSubroutineIndex" ( GLuint -> GLenum -> String -> IO GLuint) program shadertype name
+
+
+
+glUniformSubroutinesuiv : GLenum -> GLsizei -> (List GLuint) -> IO ()
+glUniformSubroutinesuiv shadertype count indices = 
+   do indices' <- intsToBuffer indices
+      res <- foreign FFI_C "glUniformSubroutinesuiv" ( GLenum -> GLsizei -> Ptr -> IO ()) shadertype count indices' 
+      free indices'
+      pure ()
+
+
+
+glGetUniformSubroutineuiv : GLenum -> GLint -> IO (List GLuint)
+glGetUniformSubroutineuiv shadertype location = 
+  do ptr <- intBuffer 1
+     foreign FFI_C "glGetUniformSubroutineuiv" ( GLenum -> GLint -> Ptr -> IO ()) shadertype location ptr 
+     intBufferToList ptr 1
+
+
+
+glGetProgramStageiv : GLuint -> GLenum -> GLenum -> IO (List GLint)
+glGetProgramStageiv program shadertype pname = 
+  do ptr <- intBuffer 1
+     foreign FFI_C "glGetProgramStageiv" ( GLuint -> GLenum -> GLenum -> Ptr -> IO ()) program shadertype pname ptr 
+     intBufferToList ptr 1
+
+
+
+glPatchParameteri : GLenum -> GLint -> IO ()
+glPatchParameteri pname value = 
+  foreign FFI_C "glPatchParameteri" ( GLenum -> GLint -> IO ()) pname value
+
+
+
+glPatchParameterfv : GLenum -> (List GLfloat) -> IO ()
+glPatchParameterfv pname values = 
+   do values' <- floatsToBuffer values
+      res <- foreign FFI_C "glPatchParameterfv" ( GLenum -> Ptr -> IO ()) pname values' 
+      free values'
+      pure ()
+
+
+
+glBindTransformFeedback : GLenum -> GLuint -> IO ()
+glBindTransformFeedback target id = 
+  foreign FFI_C "glBindTransformFeedback" ( GLenum -> GLuint -> IO ()) target id
+
+
+
+glDeleteTransformFeedbacks : GLsizei -> (List GLuint) -> IO ()
+glDeleteTransformFeedbacks n ids = 
+   do ids' <- intsToBuffer ids
+      res <- foreign FFI_C "glDeleteTransformFeedbacks" ( GLsizei -> Ptr -> IO ()) n ids' 
+      free ids'
+      pure ()
+
+
+
+glGenTransformFeedbacks : GLsizei -> IO (List GLuint)
+glGenTransformFeedbacks n = 
+  do ptr <- intBuffer n
+     foreign FFI_C "glGenTransformFeedbacks" ( GLsizei -> Ptr -> IO ()) n ptr 
+     intBufferToList ptr n
+
+
+
+glIsTransformFeedback : GLuint -> IO GLboolean
+glIsTransformFeedback id = 
+  foreign FFI_C "glIsTransformFeedback" ( GLuint -> IO GLboolean) id
+
+
+
+glPauseTransformFeedback : IO ()
+glPauseTransformFeedback = 
+  foreign FFI_C "glPauseTransformFeedback" (IO ())
+
+
+
+glResumeTransformFeedback : IO ()
+glResumeTransformFeedback = 
+  foreign FFI_C "glResumeTransformFeedback" (IO ())
+
+
+
+glDrawTransformFeedback : PrimitiveType -> GLuint -> IO ()
+glDrawTransformFeedback mode id = 
+  foreign FFI_C "glDrawTransformFeedback" ( Int -> GLuint -> IO ()) (toGlInt mode) id
+
+
+
+glDrawTransformFeedbackStream : PrimitiveType -> GLuint -> GLuint -> IO ()
+glDrawTransformFeedbackStream mode id stream = 
+  foreign FFI_C "glDrawTransformFeedbackStream" ( Int -> GLuint -> GLuint -> IO ()) (toGlInt mode) id stream
+
+
+
+glBeginQueryIndexed : GLenum -> GLuint -> GLuint -> IO ()
+glBeginQueryIndexed target index id = 
+  foreign FFI_C "glBeginQueryIndexed" ( GLenum -> GLuint -> GLuint -> IO ()) target index id
+
+
+
+glEndQueryIndexed : GLenum -> GLuint -> IO ()
+glEndQueryIndexed target index = 
+  foreign FFI_C "glEndQueryIndexed" ( GLenum -> GLuint -> IO ()) target index
+
+
+
+glReleaseShaderCompiler : IO ()
+glReleaseShaderCompiler = 
+  foreign FFI_C "glReleaseShaderCompiler" (IO ())
+
+
+
+glShaderBinary : GLsizei -> (List GLuint) -> GLenum -> Ptr -> GLsizei -> IO ()
+glShaderBinary count shaders binaryformat binary length' = 
+   do shaders' <- intsToBuffer shaders
+      res <- foreign FFI_C "glShaderBinary" ( GLsizei -> Ptr -> GLenum -> Ptr -> GLsizei -> IO ()) count shaders' binaryformat binary length' 
+      free shaders'
+      pure ()
+
+
+
+glDepthRangef : GLfloat -> GLfloat -> IO ()
+glDepthRangef n f = 
+  foreign FFI_C "glDepthRangef" ( GLfloat -> GLfloat -> IO ()) n f
+
+
+
+glClearDepthf : GLfloat -> IO ()
+glClearDepthf d = 
+  foreign FFI_C "glClearDepthf" ( GLfloat -> IO ()) d
+
+
+
+glProgramBinary : GLuint -> GLenum -> Ptr -> GLsizei -> IO ()
+glProgramBinary program binaryFormat binary length' = 
+  foreign FFI_C "glProgramBinary" ( GLuint -> GLenum -> Ptr -> GLsizei -> IO ()) program binaryFormat binary length'
+
+
+
+glUseProgramStages : GLuint -> GLbitfield -> GLuint -> IO ()
+glUseProgramStages pipeline stages program = 
+  foreign FFI_C "glUseProgramStages" ( GLuint -> GLbitfield -> GLuint -> IO ()) pipeline stages program
+
+
+
+glActiveShaderProgram : GLuint -> GLuint -> IO ()
+glActiveShaderProgram pipeline program = 
+  foreign FFI_C "glActiveShaderProgram" ( GLuint -> GLuint -> IO ()) pipeline program
+
+
+
+glCreateShaderProgramv : GLenum -> GLsizei -> String -> IO GLuint
+glCreateShaderProgramv type count strings = 
+  foreign FFI_C "glCreateShaderProgramv" ( GLenum -> GLsizei -> String -> IO GLuint) type count strings
+
+
+
+glBindProgramPipeline : GLuint -> IO ()
+glBindProgramPipeline pipeline = 
+  foreign FFI_C "glBindProgramPipeline" ( GLuint -> IO ()) pipeline
+
+
+
+glDeleteProgramPipelines : GLsizei -> (List GLuint) -> IO ()
+glDeleteProgramPipelines n pipelines = 
+   do pipelines' <- intsToBuffer pipelines
+      res <- foreign FFI_C "glDeleteProgramPipelines" ( GLsizei -> Ptr -> IO ()) n pipelines' 
+      free pipelines'
+      pure ()
+
+
+
+glGenProgramPipelines : GLsizei -> IO (List GLuint)
+glGenProgramPipelines n = 
+  do ptr <- intBuffer n
+     foreign FFI_C "glGenProgramPipelines" ( GLsizei -> Ptr -> IO ()) n ptr 
+     intBufferToList ptr n
+
+
+
+glIsProgramPipeline : GLuint -> IO GLboolean
+glIsProgramPipeline pipeline = 
+  foreign FFI_C "glIsProgramPipeline" ( GLuint -> IO GLboolean) pipeline
+
+
+
+glProgramUniform1i : GLuint -> GLint -> GLint -> IO ()
+glProgramUniform1i program location v0 = 
+  foreign FFI_C "glProgramUniform1i" ( GLuint -> GLint -> GLint -> IO ()) program location v0
+
+
+
+glProgramUniform1iv : GLuint -> GLint -> GLsizei -> (List GLint) -> IO ()
+glProgramUniform1iv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform1iv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform1f : GLuint -> GLint -> GLfloat -> IO ()
+glProgramUniform1f program location v0 = 
+  foreign FFI_C "glProgramUniform1f" ( GLuint -> GLint -> GLfloat -> IO ()) program location v0
+
+
+
+glProgramUniform1fv : GLuint -> GLint -> GLsizei -> (List GLfloat) -> IO ()
+glProgramUniform1fv program location count value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniform1fv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform1d : GLuint -> GLint -> GLdouble -> IO ()
+glProgramUniform1d program location v0 = 
+  foreign FFI_C "glProgramUniform1d" ( GLuint -> GLint -> GLdouble -> IO ()) program location v0
+
+
+
+glProgramUniform1dv : GLuint -> GLint -> GLsizei -> (List GLdouble) -> IO ()
+glProgramUniform1dv program location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniform1dv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform1ui : GLuint -> GLint -> GLuint -> IO ()
+glProgramUniform1ui program location v0 = 
+  foreign FFI_C "glProgramUniform1ui" ( GLuint -> GLint -> GLuint -> IO ()) program location v0
+
+
+
+glProgramUniform1uiv : GLuint -> GLint -> GLsizei -> (List GLuint) -> IO ()
+glProgramUniform1uiv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform1uiv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform2i : GLuint -> GLint -> GLint -> GLint -> IO ()
+glProgramUniform2i program location v0 v1 = 
+  foreign FFI_C "glProgramUniform2i" ( GLuint -> GLint -> GLint -> GLint -> IO ()) program location v0 v1
+
+
+
+glProgramUniform2iv : GLuint -> GLint -> GLsizei -> (List GLint) -> IO ()
+glProgramUniform2iv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform2iv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform2f : GLuint -> GLint -> GLfloat -> GLfloat -> IO ()
+glProgramUniform2f program location v0 v1 = 
+  foreign FFI_C "glProgramUniform2f" ( GLuint -> GLint -> GLfloat -> GLfloat -> IO ()) program location v0 v1
+
+
+
+glProgramUniform2fv : GLuint -> GLint -> GLsizei -> (List GLfloat) -> IO ()
+glProgramUniform2fv program location count value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniform2fv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform2d : GLuint -> GLint -> GLdouble -> GLdouble -> IO ()
+glProgramUniform2d program location v0 v1 = 
+  foreign FFI_C "glProgramUniform2d" ( GLuint -> GLint -> GLdouble -> GLdouble -> IO ()) program location v0 v1
+
+
+
+glProgramUniform2dv : GLuint -> GLint -> GLsizei -> (List GLdouble) -> IO ()
+glProgramUniform2dv program location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniform2dv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform2ui : GLuint -> GLint -> GLuint -> GLuint -> IO ()
+glProgramUniform2ui program location v0 v1 = 
+  foreign FFI_C "glProgramUniform2ui" ( GLuint -> GLint -> GLuint -> GLuint -> IO ()) program location v0 v1
+
+
+
+glProgramUniform2uiv : GLuint -> GLint -> GLsizei -> (List GLuint) -> IO ()
+glProgramUniform2uiv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform2uiv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform3i : GLuint -> GLint -> GLint -> GLint -> GLint -> IO ()
+glProgramUniform3i program location v0 v1 v2 = 
+  foreign FFI_C "glProgramUniform3i" ( GLuint -> GLint -> GLint -> GLint -> GLint -> IO ()) program location v0 v1 v2
+
+
+
+glProgramUniform3iv : GLuint -> GLint -> GLsizei -> (List GLint) -> IO ()
+glProgramUniform3iv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform3iv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform3f : GLuint -> GLint -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glProgramUniform3f program location v0 v1 v2 = 
+  foreign FFI_C "glProgramUniform3f" ( GLuint -> GLint -> GLfloat -> GLfloat -> GLfloat -> IO ()) program location v0 v1 v2
+
+
+
+glProgramUniform3fv : GLuint -> GLint -> GLsizei -> (List GLfloat) -> IO ()
+glProgramUniform3fv program location count value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniform3fv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform3d : GLuint -> GLint -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glProgramUniform3d program location v0 v1 v2 = 
+  foreign FFI_C "glProgramUniform3d" ( GLuint -> GLint -> GLdouble -> GLdouble -> GLdouble -> IO ()) program location v0 v1 v2
+
+
+
+glProgramUniform3dv : GLuint -> GLint -> GLsizei -> (List GLdouble) -> IO ()
+glProgramUniform3dv program location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniform3dv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform3ui : GLuint -> GLint -> GLuint -> GLuint -> GLuint -> IO ()
+glProgramUniform3ui program location v0 v1 v2 = 
+  foreign FFI_C "glProgramUniform3ui" ( GLuint -> GLint -> GLuint -> GLuint -> GLuint -> IO ()) program location v0 v1 v2
+
+
+
+glProgramUniform3uiv : GLuint -> GLint -> GLsizei -> (List GLuint) -> IO ()
+glProgramUniform3uiv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform3uiv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform4i : GLuint -> GLint -> GLint -> GLint -> GLint -> GLint -> IO ()
+glProgramUniform4i program location v0 v1 v2 v3 = 
+  foreign FFI_C "glProgramUniform4i" ( GLuint -> GLint -> GLint -> GLint -> GLint -> GLint -> IO ()) program location v0 v1 v2 v3
+
+
+
+glProgramUniform4iv : GLuint -> GLint -> GLsizei -> (List GLint) -> IO ()
+glProgramUniform4iv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform4iv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform4f : GLuint -> GLint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glProgramUniform4f program location v0 v1 v2 v3 = 
+  foreign FFI_C "glProgramUniform4f" ( GLuint -> GLint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) program location v0 v1 v2 v3
+
+
+
+glProgramUniform4fv : GLuint -> GLint -> GLsizei -> (List GLfloat) -> IO ()
+glProgramUniform4fv program location count value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniform4fv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform4d : GLuint -> GLint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glProgramUniform4d program location v0 v1 v2 v3 = 
+  foreign FFI_C "glProgramUniform4d" ( GLuint -> GLint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()) program location v0 v1 v2 v3
+
+
+
+glProgramUniform4dv : GLuint -> GLint -> GLsizei -> (List GLdouble) -> IO ()
+glProgramUniform4dv program location count value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniform4dv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniform4ui : GLuint -> GLint -> GLuint -> GLuint -> GLuint -> GLuint -> IO ()
+glProgramUniform4ui program location v0 v1 v2 v3 = 
+  foreign FFI_C "glProgramUniform4ui" ( GLuint -> GLint -> GLuint -> GLuint -> GLuint -> GLuint -> IO ()) program location v0 v1 v2 v3
+
+
+
+glProgramUniform4uiv : GLuint -> GLint -> GLsizei -> (List GLuint) -> IO ()
+glProgramUniform4uiv program location count value = 
+   do value' <- intsToBuffer value
+      res <- foreign FFI_C "glProgramUniform4uiv" ( GLuint -> GLint -> GLsizei -> Ptr -> IO ()) program location count value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix2fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix2fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix2fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix3fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix3fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix3fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix4fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix4fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix4fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix2dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix2dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix2dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix3dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix3dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix3dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix4dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix4dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix4dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix2x3fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix2x3fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix2x3fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix3x2fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix3x2fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix3x2fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix2x4fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix2x4fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix2x4fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix4x2fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix4x2fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix4x2fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix3x4fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix3x4fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix3x4fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix4x3fv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLfloat) -> IO ()
+glProgramUniformMatrix4x3fv program location count transpose value = 
+   do value' <- floatsToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix4x3fv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix2x3dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix2x3dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix2x3dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix3x2dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix3x2dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix3x2dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix2x4dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix2x4dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix2x4dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix4x2dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix4x2dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix4x2dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix3x4dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix3x4dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix3x4dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glProgramUniformMatrix4x3dv : GLuint -> GLint -> GLsizei -> GLboolean -> (List GLdouble) -> IO ()
+glProgramUniformMatrix4x3dv program location count transpose value = 
+   do value' <- doublesToBuffer value
+      res <- foreign FFI_C "glProgramUniformMatrix4x3dv" ( GLuint -> GLint -> GLsizei -> GLboolean -> Ptr -> IO ()) program location count transpose value' 
+      free value'
+      pure ()
+
+
+
+glValidateProgramPipeline : GLuint -> IO ()
+glValidateProgramPipeline pipeline = 
+  foreign FFI_C "glValidateProgramPipeline" ( GLuint -> IO ()) pipeline
+
+
+
+glVertexAttribL1d : GLuint -> GLdouble -> IO ()
+glVertexAttribL1d index x = 
+  foreign FFI_C "glVertexAttribL1d" ( GLuint -> GLdouble -> IO ()) index x
+
+
+
+glVertexAttribL2d : GLuint -> GLdouble -> GLdouble -> IO ()
+glVertexAttribL2d index x y = 
+  foreign FFI_C "glVertexAttribL2d" ( GLuint -> GLdouble -> GLdouble -> IO ()) index x y
+
+
+
+glVertexAttribL3d : GLuint -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glVertexAttribL3d index x y z = 
+  foreign FFI_C "glVertexAttribL3d" ( GLuint -> GLdouble -> GLdouble -> GLdouble -> IO ()) index x y z
+
+
+
+glVertexAttribL4d : GLuint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()
+glVertexAttribL4d index x y z w = 
+  foreign FFI_C "glVertexAttribL4d" ( GLuint -> GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()) index x y z w
+
+
+
+glVertexAttribL1dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttribL1dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttribL1dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribL2dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttribL2dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttribL2dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribL3dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttribL3dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttribL3dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribL4dv : GLuint -> (List GLdouble) -> IO ()
+glVertexAttribL4dv index v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glVertexAttribL4dv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glVertexAttribLPointer : GLuint -> GLint -> GLenum -> GLsizei -> Ptr -> IO ()
+glVertexAttribLPointer index size type stride pointer = 
+  foreign FFI_C "glVertexAttribLPointer" ( GLuint -> GLint -> GLenum -> GLsizei -> Ptr -> IO ()) index size type stride pointer
+
+
+
+glViewportArrayv : GLuint -> GLsizei -> (List GLfloat) -> IO ()
+glViewportArrayv first count v = 
+   do v' <- floatsToBuffer v
+      res <- foreign FFI_C "glViewportArrayv" ( GLuint -> GLsizei -> Ptr -> IO ()) first count v' 
+      free v'
+      pure ()
+
+
+
+glViewportIndexedf : GLuint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()
+glViewportIndexedf index x y w h = 
+  foreign FFI_C "glViewportIndexedf" ( GLuint -> GLfloat -> GLfloat -> GLfloat -> GLfloat -> IO ()) index x y w h
+
+
+
+glViewportIndexedfv : GLuint -> (List GLfloat) -> IO ()
+glViewportIndexedfv index v = 
+   do v' <- floatsToBuffer v
+      res <- foreign FFI_C "glViewportIndexedfv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glScissorArrayv : GLuint -> GLsizei -> (List GLint) -> IO ()
+glScissorArrayv first count v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glScissorArrayv" ( GLuint -> GLsizei -> Ptr -> IO ()) first count v' 
+      free v'
+      pure ()
+
+
+
+glScissorIndexed : GLuint -> GLint -> GLint -> GLsizei -> GLsizei -> IO ()
+glScissorIndexed index left bottom width height = 
+  foreign FFI_C "glScissorIndexed" ( GLuint -> GLint -> GLint -> GLsizei -> GLsizei -> IO ()) index left bottom width height
+
+
+
+glScissorIndexedv : GLuint -> (List GLint) -> IO ()
+glScissorIndexedv index v = 
+   do v' <- intsToBuffer v
+      res <- foreign FFI_C "glScissorIndexedv" ( GLuint -> Ptr -> IO ()) index v' 
+      free v'
+      pure ()
+
+
+
+glDepthRangeArrayv : GLuint -> GLsizei -> (List GLdouble) -> IO ()
+glDepthRangeArrayv first count v = 
+   do v' <- doublesToBuffer v
+      res <- foreign FFI_C "glDepthRangeArrayv" ( GLuint -> GLsizei -> Ptr -> IO ()) first count v' 
+      free v'
+      pure ()
+
+
+
+glDepthRangeIndexed : GLuint -> GLdouble -> GLdouble -> IO ()
+glDepthRangeIndexed index n f = 
+  foreign FFI_C "glDepthRangeIndexed" ( GLuint -> GLdouble -> GLdouble -> IO ()) index n f
 
 
 
