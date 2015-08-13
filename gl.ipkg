@@ -2,8 +2,9 @@ package gl
 
 sourcedir = src
 modules = Graphics.Rendering.Gl.Buffers, Graphics.Rendering.Gl.Types, Graphics.Rendering.Config,
-	  Graphics.Rendering.Gl, Graphics.Rendering.Gl.Gl41,
-	  Graphics.Util.Math3D, Graphics.Util.ObjLoader, Graphics.Util.Mesh
+	  Graphics.Rendering.Gl, Graphics.Rendering.Gl.Gl41, 
+	  Graphics.Util.Math3D, Graphics.Util.ObjLoader, Graphics.Util.Mesh,
+	  Effect.Gl
 
 opts = "-p effects -p glfw -p contrib -p lightyear" 
 
