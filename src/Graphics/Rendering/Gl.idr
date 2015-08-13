@@ -2,9 +2,14 @@ module Graphics.Rendering.Gl
 
 import Data.Fin
 import Graphics.Util.Mesh
+import Graphics.Util.Math3D
 import Graphics.Rendering.Gl.Types
 import Graphics.Rendering.Gl.Buffers
 import Graphics.Rendering.Gl.Gl41
+import Data.Matrix
+import Data.Vect
+import Control.Algebra
+
 
 %include C "GL/glew.h"
 %include C "gl_idris.h"
@@ -34,9 +39,27 @@ toList' (x :: xs) = (toList x) ++ toList' xs
 -- ----------------------------------------------------------------- [ Simple API ]
 
 public
+record Display where
+  constructor MkDisplay
+  width : Int
+  height : Int
+  
+public 
+aspectRatio : Display -> Double
+aspectRatio (MkDisplay width height) = (cast width) / (cast height)
+
+
+public
 data Light : Type where
   PointLight: (position: Vec3) -> (color: Vec3) -> Light
 
+public 
+record Camera where
+  constructor MkCamera
+  position : Vec3
+  fov : Angle
+  nearPlane : Double
+  farPlane : Double
 
 public
 record Texture where
@@ -153,19 +176,17 @@ deleteModel (TexturedModel vao vbos _ _) = do
   pure ()
 
 public
-data Entity a = 
-  SimpleEntity Model Shader Vec3 Vec3 a
+data Entity : Type -> Type where
+  SimpleEntity : Model -> Shader -> (position: Vec3) -> (rotation: Vect 3 Angle) -> (location: Int) -> (val: a) -> Entity a
   
       
 public 
 render : Entity a -> (prepare: a -> IO ()) -> IO ()
-render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) position rotation val) prepare = do
+render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) position rotation location val) prepare = do
   glBindVertexArray vao
-  --glEnableVertexAttribArray 0
-  --glEnableVertexAttribArray 1
-  --glEnableVertexAttribArray 2
-
   glUseProgram prog
+  let transform = (translate position) <> (rotate rotation) <> (scaleAll 1)
+  glUniformMatrix4fv location 1 0 (toList $ toGl transform)
   prepare val
   traverse (\t => glBindTexture GL_TEXTURE_2D (textureLocation t)) textures
   
@@ -208,4 +229,5 @@ glGetInfo = do vendor   <- glGetString GL_VENDOR
                renderer <- glGetString GL_RENDERER
                version  <- glGetString GL_VERSION
                return $ foldl1 (++) (the (List String) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"])
+
 

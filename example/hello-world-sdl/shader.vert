@@ -6,8 +6,17 @@ layout(location=2) in vec2 inTextureCoords;
 
 out vec2 passTextureCoords;
 
+uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 transformMatrix;
+
 void main(void)
 {
-  gl_Position = vec4(inPosition, 1.0);
+  mat4 id =  mat4(1.0);
+  vec4 worldPosition = transformMatrix * vec4(inPosition,1.0);
+  gl_Position = projectionMatrix * viewMatrix * worldPosition;
+  //gl_Position = id * vec4(inPosition,1.0);
+  //gl_Position = viewMatrix * vec4(inPosition,1.0);
+
   passTextureCoords = inTextureCoords;
 }
