@@ -1,5 +1,6 @@
 module Main
 
+import Graphics.SDL2.SDL
 import Control.Algebra
 import Graphics.Util.Math3D as T
 import Data.Matrix
@@ -17,39 +18,23 @@ import Graphics.Util.ObjLoader
 
 record State where
   constructor MkState
-  win: GlfwWindow
+  renderer: SDLRenderer
+  window: SDLWindow
   display : Display
   camera  : Camera
   entity : Entity String
 
 draw : State -> IO ()
-draw (MkState win display camera entity) = do 
+draw (MkState renderer win display camera entity) = do 
                    glClearColor 0.2 0.2 0.2 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
                    
                    render entity (\_ => pure ())
                    
-                   glfwSwapBuffers win
+                   glSwapWindow win
 
                    
-initDisplay : String -> Display -> IO GlfwWindow
-initDisplay title (MkDisplay width height) = do
-  glfw <- glfwInit
-  glfwWindowHint GLFW_CONTEXT_VERSION_MAJOR  4
-  glfwWindowHint GLFW_CONTEXT_VERSION_MINOR  1
-  glfwWindowHint GLFW_OPENGL_FORWARD_COMPAT  1
-  glfwWindowHint GLFW_OPENGL_PROFILE         (toInt GLFW_OPENGL_CORE_PROFILE)
-  win <- glfwCreateWindow title width height defaultMonitor
-  -- now we pretend every thing is going to be ok
-  glfwMakeContextCurrent win
-  glewInit
-  info <- glGetInfo
-  putStrLn info
-  glEnable GL_DEPTH_TEST
-  glDepthFunc GL_LESS
-  return win
-
 camera : Camera
 camera = MkCamera [0.0, 0.0, 0.0] (Degree 45) 0.1 100.0
 
@@ -58,9 +43,25 @@ display = MkDisplay 640 480
 
 main : IO ()
 main = do 
-          win <- initDisplay "Hello Idris" display
-          glfwSetInputMode win GLFW_STICKY_KEYS 1
-          glfwSwapInterval 0
+          initSDL
+          glSetAttribute SDL_GL_CONTEXT_PROFILE_MASK (toSDLInt SDL_GL_CONTEXT_PROFILE_CORE)
+          glSetAttribute SDL_GL_CONTEXT_MAJOR_VERSION 4
+          glSetAttribute SDL_GL_CONTEXT_MINOR_VERSION 1
+          glSetAttribute SDL_GL_ACCELERATED_VISUAL 1
+          glSetAttribute SDL_GL_DOUBLEBUFFER  1
+          glSetAttribute SDL_GL_DEPTH_SIZE 16
+
+          (win,renderer) <- startSDL "Hello Idris" 800 600
+          ctx <- createGLContext win
+          glMakeCurrent win ctx
+          
+          glSetSwapInterval 1
+          
+          glewInit
+          info <- glGetInfo
+          putStrLn info
+          glEnable GL_DEPTH_TEST
+          glDepthFunc GL_LESS
           
           texture <- loadTexture "tiles.png" 0          
           plane <- loadObj "plane.obj"
@@ -70,7 +71,6 @@ main = do
           traverse printShaderLog  (shaders shader)
           glUseProgram $ program shader
           
-
           locView <- glGetUniformLocation (program shader) "viewMatrix"
           glUniformMatrix4fv locView 1 0 (toList $ toGl identity)
 
@@ -82,24 +82,24 @@ main = do
 
           let entity = SimpleEntity planeModel shader [0,0,-3] [(Degree 0),(Degree 0),(Degree 0)] loc "Test"
           
-          let initialState = MkState win display camera entity
+          let initialState = MkState renderer win display camera entity
           eventLoop initialState
           deleteModel planeModel
           deleteShaders shader
           deleteTextures [texture]
-
-          glfwDestroyWindow win
-          glfwTerminate
+          deleteGLContext ctx
+          endSDL win renderer
           pure ()
        where 
          eventLoop : State -> IO ()
          eventLoop state = do
-                      draw state 
-                      glfwPollEvents
-                      key <- glfwGetFunctionKey (win state) GLFW_KEY_ESCAPE
-                      shouldClose <- glfwWindowShouldClose (win state)
-                      if shouldClose || key == GLFW_PRESS
-                      then pure ()
-                      else do 
-                        eventLoop state
+                         e <- pollEvent
+                         case e of
+                           Just AppQuit => return ()
+                           Just event   => do draw state
+                                              --handle r event
+                                              putStrLn $ "event" ++ (show event)
+                                              eventLoop state
+                           _            => eventLoop state
+
 

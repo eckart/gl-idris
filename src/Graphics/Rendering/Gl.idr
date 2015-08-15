@@ -3,9 +3,9 @@ module Graphics.Rendering.Gl
 import Data.Fin
 import Graphics.Util.Mesh
 import Graphics.Util.Math3D
-import Graphics.Rendering.Gl.Types
+import public Graphics.Rendering.Gl.Types
 import Graphics.Rendering.Gl.Buffers
-import Graphics.Rendering.Gl.Gl41
+import public Graphics.Rendering.Gl.Gl41
 import Data.Matrix
 import Data.Vect
 import Control.Algebra
@@ -18,6 +18,8 @@ import Control.Algebra
 %access private
 
 -- GLEW 
+
+||| initialises the GL function pointers
 public
 glewInit : IO Int
 glewInit = foreign FFI_C "idr_init_glew" (IO Int) 
@@ -38,35 +40,47 @@ toList' (x :: xs) = (toList x) ++ toList' xs
 
 -- ----------------------------------------------------------------- [ Simple API ]
 
+||| contains the display / viewport dimension
 public
 record Display where
   constructor MkDisplay
   width : Int
   height : Int
   
+||| returns the aspect ratio of a disply
 public 
 aspectRatio : Display -> Double
 aspectRatio (MkDisplay width height) = (cast width) / (cast height)
 
 
+||| different lighting models for shading
 public
 data Light : Type where
   PointLight: (position: Vec3) -> (color: Vec3) -> Light
 
+||| camera parameterers
+||| the values in this data type will be used to calculate the view and perspective
+||| projection matrices 
 public 
 record Camera where
   constructor MkCamera
+  ||| the 3D position of the camera
   position : Vec3
+  ||| field of view of the camera
   fov : Angle
+  ||| near plane limit of the camera frustum
   nearPlane : Double
+  ||| far plane limit of the camera frustum
   farPlane : Double
 
+||| location of a texture on the GPU
 public
 record Texture where
   constructor MkTexture
   textureLocation: Int
   
 
+||| locations of a shading program
 public
 record Shader where
   constructor MkShader
@@ -83,9 +97,10 @@ createShader (shaderType, filename) = do
   glCompileShader shaderLoc
   pure shaderLoc
 
-||| creates the shader program
+||| creates and returns a shader program
+||| @ filenames a list of pairs of shader type and file name
 public
-createShaders : Vect (S (S n)) (GLenum, String) -> IO Shader
+createShaders : (filenames: Vect (S (S n)) (GLenum, String)) -> IO Shader
 createShaders filenames = do
   locs <- traverse createShader filenames
   programLoc <- glCreateProgram
@@ -175,9 +190,26 @@ deleteModel (TexturedModel vao vbos _ _) = do
   glDeleteVertexArrays 1 [vao]
   pure ()
 
+||| data type for entities.
+||| an entity is like an instance of a model. it consists of the model an instance
+||| specific data like location, rotation, etc.
+||| 
 public
 data Entity : Type -> Type where
-  SimpleEntity : Model -> Shader -> (position: Vec3) -> (rotation: Vect 3 Angle) -> (location: Int) -> (val: a) -> Entity a
+  ||| a simple entity: model, shader, texture and instance data
+  ||| @ model the model ('class') of the entity
+  ||| @ shader shader program to use
+  ||| @ position 3D position of the entity
+  ||| @ rotation 3D rotation of the entity
+  ||| @ location uniform location of the transform matrix in the shader program
+  ||| @ val arbtitrary data
+  SimpleEntity :  (model: Model) 
+               -> (shader: Shader) 
+               -> (position: Vec3) 
+               -> (rotation: Vect 3 Angle) 
+               -> (location: Int) 
+               -> (val: a) 
+               -> Entity a
   
       
 public 
