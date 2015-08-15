@@ -213,11 +213,13 @@ data Entity : Type -> Type where
   
       
 public 
-render : Entity a -> (prepare: a -> IO ()) -> IO ()
-render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) position rotation location val) prepare = do
+render : Entity a -> Camera -> (prepare: a -> IO ()) -> IO ()
+render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) entityPosition rotation location val) camera prepare = do
   glBindVertexArray vao
   glUseProgram prog
-  let transform = (translate position) <> (rotate rotation) <> (scaleAll 1)
+  
+  let pos = entityPosition <-> (position camera)
+  let transform = (translate pos) <> (rotate rotation) <> (scaleAll 1)
   glUniformMatrix4fv location 1 0 (toList $ toGl transform)
   prepare val
   traverse (\t => glBindTexture GL_TEXTURE_2D (textureLocation t)) textures

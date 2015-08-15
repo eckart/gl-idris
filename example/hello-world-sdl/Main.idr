@@ -1,17 +1,15 @@
 module Main
 
 import Graphics.SDL2.SDL
+
 import Control.Algebra
-import Graphics.Util.Math3D as T
 import Data.Matrix
 
-import Graphics.Rendering.Gl
-import Graphics.Rendering.Gl.Types
-import Graphics.Rendering.Gl.Gl41
-import Graphics.Util.Glfw
-import Graphics.Util.Mesh
-import Graphics.Rendering.Config
+import Graphics.Util.Math3D
 import Graphics.Util.ObjLoader
+import Graphics.Util.Mesh
+import Graphics.Rendering.Gl
+import Graphics.Rendering.Config
 
 %include C "GL/glew.h"
 %flag C "-Wno-pointer-sign"
@@ -24,13 +22,34 @@ record State where
   camera  : Camera
   entity : Entity String
 
+updateCameraPosition : State -> (Vec3 -> Vec3) -> State
+updateCameraPosition state f = record { camera->position = f (record {camera->position} state) } state
+
+update: Event -> State -> State
+update (KeyDown (KeyAny 'w'))  state = updateCameraPosition state (\p => p - [0,    0,    0.05])
+update (KeyDown (KeyAny 's'))  state = updateCameraPosition state (\p => p + [0,    0,    0.05])
+update (KeyDown (KeyAny 'a'))  state = updateCameraPosition state (\p => p - [0.05, 0,    0])
+update (KeyDown (KeyAny 'd'))  state = updateCameraPosition state (\p => p + [0.05, 0,    0])
+update (KeyDown KeyUpArrow)    state = updateCameraPosition state (\p => p + [0,    0.05, 0])
+update (KeyDown KeyDownArrow)  state = updateCameraPosition state (\p => p - [0,    0.05, 0])
+update (KeyDown _)             state = state
+update (KeyUp x)               state = state
+update (MouseMotion x y z w)   state = state
+update (MouseButtonDown x y z) state = state
+update (MouseButtonUp x y z)   state = state
+update (MouseWheel x)          state = state
+update (Resize x y)            state = state
+update AppQuit                 state = state
+update WindowEvent             state = state
+
+
 draw : State -> IO ()
 draw (MkState renderer win display camera entity) = do 
                    glClearColor 0.2 0.2 0.2 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
                    
-                   render entity (\_ => pure ())
+                   render entity camera (\_ => pure ())
                    
                    glSwapWindow win
 
@@ -63,8 +82,8 @@ main = do
           glEnable GL_DEPTH_TEST
           glDepthFunc GL_LESS
           
-          texture <- loadTexture "tiles.png" 0          
-          plane <- loadObj "plane.obj"
+          texture <- loadTexture "prop_rune_01_d.png" 0          
+          plane <- loadObj "rune_01.obj"
           planeModel <- createModel plane [texture]
           
           shader <- createShaders [(GL_VERTEX_SHADER, "shader.vert"), (GL_FRAGMENT_SHADER, "shader.frag")]
@@ -87,7 +106,7 @@ main = do
           deleteModel planeModel
           deleteShaders shader
           deleteTextures [texture]
-          deleteGLContext ctx
+          --deleteGLContext ctx
           endSDL win renderer
           pure ()
        where 
@@ -98,8 +117,8 @@ main = do
                            Just AppQuit => return ()
                            Just event   => do draw state
                                               --handle r event
-                                              putStrLn $ "event" ++ (show event)
-                                              eventLoop state
+                                              --putStrLn $ "event" ++ (show event)
+                                              eventLoop $ update event state
                            _            => eventLoop state
 
 
