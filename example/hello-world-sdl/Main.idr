@@ -5,7 +5,7 @@ import Graphics.SDL2.SDL
 import Control.Algebra
 import Data.Matrix
 
-import Graphics.Util.Math3D
+import Graphics.Util.Transforms
 import Graphics.Util.ObjLoader
 import Graphics.Util.Mesh
 import Graphics.Rendering.Gl
@@ -26,12 +26,12 @@ updateCameraPosition : State -> (Vec3 -> Vec3) -> State
 updateCameraPosition state f = record { camera->position = f (record {camera->position} state) } state
 
 update: Event -> State -> State
-update (KeyDown (KeyAny 'w'))  state = updateCameraPosition state (\p => p - [0,    0,    0.05])
-update (KeyDown (KeyAny 's'))  state = updateCameraPosition state (\p => p + [0,    0,    0.05])
-update (KeyDown (KeyAny 'a'))  state = updateCameraPosition state (\p => p - [0.05, 0,    0])
-update (KeyDown (KeyAny 'd'))  state = updateCameraPosition state (\p => p + [0.05, 0,    0])
-update (KeyDown KeyUpArrow)    state = updateCameraPosition state (\p => p + [0,    0.05, 0])
-update (KeyDown KeyDownArrow)  state = updateCameraPosition state (\p => p - [0,    0.05, 0])
+update (KeyDown (KeyAny 'w'))  state = updateCameraPosition state (\p => p <-> [0,    0,    0.05])
+update (KeyDown (KeyAny 's'))  state = updateCameraPosition state (\p => p <+> [0,    0,    0.05])
+update (KeyDown (KeyAny 'a'))  state = updateCameraPosition state (\p => p <-> [0.05, 0,    0])
+update (KeyDown (KeyAny 'd'))  state = updateCameraPosition state (\p => p <+> [0.05, 0,    0])
+update (KeyDown KeyUpArrow)    state = updateCameraPosition state (\p => p <+> [0,    0.05, 0])
+update (KeyDown KeyDownArrow)  state = updateCameraPosition state (\p => p <-> [0,    0.05, 0])
 update (KeyDown _)             state = state
 update (KeyUp x)               state = state
 update (MouseMotion x y z w)   state = state
@@ -55,7 +55,7 @@ draw (MkState renderer win display camera entity) = do
 
                    
 camera : Camera
-camera = MkCamera [0.0, 0.0, 0.0] (Degree 45) 0.1 100.0
+camera = MkCamera [0.0, 0.0, 0.0] (Degree 45) 0.1 100.0 [0.0, 0.0, -1.0]
 
 display : Display
 display = MkDisplay 640 480
@@ -82,8 +82,8 @@ main = do
           glEnable GL_DEPTH_TEST
           glDepthFunc GL_LESS
           
-          texture <- loadTexture "prop_rune_01_d.png" 0          
-          plane <- loadObj "rune_01.obj"
+          texture <- loadTexture "stone.png" 0          
+          plane <- loadObj "stone.obj"
           planeModel <- createModel plane [texture]
           
           shader <- createShaders [(GL_VERTEX_SHADER, "shader.vert"), (GL_FRAGMENT_SHADER, "shader.frag")]
@@ -99,7 +99,7 @@ main = do
 
           loc <- glGetUniformLocation (program shader) "transformMatrix"          
 
-          let entity = SimpleEntity planeModel shader [0,0,-3] [(Degree 0),(Degree 0),(Degree 0)] loc "Test"
+          let entity = SimpleEntity planeModel shader [0,-0.5,-3] [(Degree 0),(Degree 0),(Degree 0)] loc "Test"
           
           let initialState = MkState renderer win display camera entity
           eventLoop initialState

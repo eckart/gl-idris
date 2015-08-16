@@ -2,7 +2,7 @@ module Graphics.Rendering.Gl
 
 import Data.Fin
 import Graphics.Util.Mesh
-import Graphics.Util.Math3D
+import Graphics.Util.Transforms
 import public Graphics.Rendering.Gl.Types
 import Graphics.Rendering.Gl.Buffers
 import public Graphics.Rendering.Gl.Gl41
@@ -56,7 +56,13 @@ aspectRatio (MkDisplay width height) = (cast width) / (cast height)
 ||| different lighting models for shading
 public
 data Light : Type where
+  ||| a point light
+  ||| @ position position of the light
+  ||| @ color color of the light
   PointLight: (position: Vec3) -> (color: Vec3) -> Light
+  ||| a directional (sun) light
+  ||| @ direction the direction vector (i.e. the angle) of the light 
+  DirectionalLight: (direction: Vec3) -> (color: Vec3) -> Light
 
 ||| camera parameterers
 ||| the values in this data type will be used to calculate the view and perspective
@@ -72,6 +78,8 @@ record Camera where
   nearPlane : Double
   ||| far plane limit of the camera frustum
   farPlane : Double
+  ||| the direction of the camera as a vector
+  direction : Vec3
 
 ||| location of a texture on the GPU
 public
