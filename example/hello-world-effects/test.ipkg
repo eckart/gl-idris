@@ -1,7 +1,0 @@
-package test
-
-opts = "-p effects -p gl" 
-
-executable = test
-main = Main
-
