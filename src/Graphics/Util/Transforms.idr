@@ -136,8 +136,8 @@ perspectiveProjection fov aspect (near, far) = [
 
                  
 ||| transformation matrix to transform from world coordinates to view coordinates
-||| @ eye position of the viewer
-||| @ center where the camera aims - a vector
+||| @ eye where the camera aims - a vector
+||| @ center location of the center of the camera
 ||| @ up up direction for the viewer                 
 viewMatrix : (eye: Pos) -> (center: Pos) -> (up: Pos) -> TransformationMatrix
 viewMatrix eye center up = (transpose m) ++ [v] 
@@ -153,9 +153,15 @@ viewMatrix eye center up = (transpose m) ++ [v]
                                v : Vect 4 Double
                                v = [0,0,0,1]
                                
-
+||| a view matrix where the camera is located at the origin and points down the z-axis
+||| while the y-axis is the "up" direction
 defaultViewMatrix : TransformationMatrix
 defaultViewMatrix = viewMatrix [0,0,-1] [0,0,0] [0,1,0]
+
+||| a view matrix for a camer located at the origin
+||| @ eye direction of the camera (where the camera is pointing)
+standardViewMatrix : (eye: Pos) -> TransformationMatrix
+standardViewMatrix eye = viewMatrix eye [0,0,0] [0,1,0]
 
 
 -- ----------------------------------------------------------------- [ Quaternions ]

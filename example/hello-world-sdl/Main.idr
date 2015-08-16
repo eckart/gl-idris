@@ -14,16 +14,31 @@ import Graphics.Rendering.Config
 %include C "GL/glew.h"
 %flag C "-Wno-pointer-sign"
 
+record Time where
+  constructor MkTime
+  ticks : Integer
+  lastFrame: Integer
+  
+record ShaderLocations where
+  constructor Locs
+  viewMatrixLocation : Int
+  
 record State where
   constructor MkState
   renderer: SDLRenderer
   window: SDLWindow
   display : Display
   camera  : Camera
-  entity : Entity String
+  locations: ShaderLocations
+  entities : List (Entity String)
 
 updateCameraPosition : State -> (Vec3 -> Vec3) -> State
 updateCameraPosition state f = record { camera->position = f (record {camera->position} state) } state
+
+||| TODO: update direction based on mouse movement
+updateCameraDirection : State -> Int -> Int -> State
+updateCameraDirection state dx dy = state
+
 
 update: Event -> State -> State
 update (KeyDown (KeyAny 'w'))  state = updateCameraPosition state (\p => p <-> [0,    0,    0.05])
@@ -34,7 +49,7 @@ update (KeyDown KeyUpArrow)    state = updateCameraPosition state (\p => p <+> [
 update (KeyDown KeyDownArrow)  state = updateCameraPosition state (\p => p <-> [0,    0.05, 0])
 update (KeyDown _)             state = state
 update (KeyUp x)               state = state
-update (MouseMotion x y z w)   state = state
+update (MouseMotion x y dx dy) state = updateCameraDirection state dx dy
 update (MouseButtonDown x y z) state = state
 update (MouseButtonUp x y z)   state = state
 update (MouseWheel x)          state = state
@@ -44,14 +59,18 @@ update WindowEvent             state = state
 
 
 draw : State -> IO ()
-draw (MkState renderer win display camera entity) = do 
-                   glClearColor 0.2 0.2 0.2 1
-                   glClear GL_COLOR_BUFFER_BIT
-                   glClear GL_DEPTH_BUFFER_BIT
+draw state = do 
+                glClearColor 0.2 0.2 0.2 1
+                glClear GL_COLOR_BUFFER_BIT
+                glClear GL_DEPTH_BUFFER_BIT
+                
+                let locView = record {locations->viewMatrixLocation} state
+                let cameraDirection = record {camera->direction} state
+                glUniformMatrix4fv locView 1 0 (toList $ toGl $ standardViewMatrix cameraDirection)
                    
-                   render entity camera (\_ => pure ())
+                traverse (\entity => render entity (camera state) (\_ => pure ())) (entities state)
                    
-                   glSwapWindow win
+                glSwapWindow $ window state
 
                    
 camera : Camera
@@ -91,7 +110,7 @@ main = do
           glUseProgram $ program shader
           
           locView <- glGetUniformLocation (program shader) "viewMatrix"
-          glUniformMatrix4fv locView 1 0 (toList $ toGl identity)
+          glUniformMatrix4fv locView 1 0 (toList $ toGl $ viewMatrix [0,0,-1] [0,0,0] [0,1,0])
 
           locProj <- glGetUniformLocation (program shader) "projectionMatrix"
           let projM = perspectiveProjection (fov camera) (aspectRatio display) ((nearPlane camera), (farPlane camera))
@@ -101,7 +120,7 @@ main = do
 
           let entity = SimpleEntity planeModel shader [0,-0.5,-3] [(Degree 0),(Degree 0),(Degree 0)] loc "Test"
           
-          let initialState = MkState renderer win display camera entity
+          let initialState = MkState renderer win display camera (Locs locView) [entity]
           eventLoop initialState
           deleteModel planeModel
           deleteShaders shader
@@ -117,7 +136,7 @@ main = do
                            Just AppQuit => return ()
                            Just event   => do draw state
                                               --handle r event
-                                              --putStrLn $ "event" ++ (show event)
+                                              putStrLn $ "event" ++ (show event)
                                               eventLoop $ update event state
                            _            => eventLoop state
 
