@@ -14,11 +14,32 @@ import Graphics.Rendering.Config
 %include C "GL/glew.h"
 %flag C "-Wno-pointer-sign"
 
-record Time where
-  constructor MkTime
-  ticks : Integer
-  lastFrame: Integer
+||| contains the display / viewport dimension
+record Display where
+  constructor MkDisplay
+  width : Int
+  height : Int
   
+||| returns the aspect ratio of a disply
+aspectRatio : Display -> Double
+aspectRatio (MkDisplay width height) = (cast width) / (cast height)
+
+||| camera parameterers
+||| the values in this data type will be used to calculate the view and perspective
+||| projection matrices 
+record Camera where
+  constructor MkCamera
+  ||| the 3D position of the camera
+  position : Vec3
+  ||| field of view of the camera
+  fov : Angle
+  ||| near plane limit of the camera frustum
+  nearPlane : Double
+  ||| far plane limit of the camera frustum
+  farPlane : Double
+  ||| the direction of the camera as a vector
+  direction : Vec3
+
 record ShaderLocations where
   constructor Locs
   viewMatrixLocation : Int
@@ -35,11 +56,6 @@ record State where
 updateCameraPosition : State -> (Vec3 -> Vec3) -> State
 updateCameraPosition state f = record { camera->position = f (record {camera->position} state) } state
 
-||| TODO: update direction based on mouse movement
-updateCameraDirection : State -> Int -> Int -> State
-updateCameraDirection state dx dy = state
-
-
 update: Event -> State -> State
 update (KeyDown (KeyAny 'w'))  state = updateCameraPosition state (\p => p <-> [0,    0,    0.05])
 update (KeyDown (KeyAny 's'))  state = updateCameraPosition state (\p => p <+> [0,    0,    0.05])
@@ -49,7 +65,7 @@ update (KeyDown KeyUpArrow)    state = updateCameraPosition state (\p => p <+> [
 update (KeyDown KeyDownArrow)  state = updateCameraPosition state (\p => p <-> [0,    0.05, 0])
 update (KeyDown _)             state = state
 update (KeyUp x)               state = state
-update (MouseMotion x y dx dy) state = updateCameraDirection state dx dy
+update (MouseMotion x y dx dy) state = state
 update (MouseButtonDown x y z) state = state
 update (MouseButtonUp x y z)   state = state
 update (MouseWheel x)          state = state
@@ -57,27 +73,31 @@ update (Resize x y)            state = state
 update AppQuit                 state = state
 update WindowEvent             state = state
 
+setViewMatrix : State -> Entity String -> String -> IO ()
+setViewMatrix state (SimpleEntity _ _ entityPosition rotation location _) s = do 
+  let pos = entityPosition <-> (record { camera->position } state)
+  let transform = (translate pos) <> (rotate rotation) <> (scaleAll 1)
+  glUniformMatrix4fv location 1 0 (toList $ toGl transform)
 
 draw : State -> IO ()
 draw state = do 
                 glClearColor 0.2 0.2 0.2 1
                 glClear GL_COLOR_BUFFER_BIT
                 glClear GL_DEPTH_BUFFER_BIT
-                
+
                 let locView = record {locations->viewMatrixLocation} state
                 let cameraDirection = record {camera->direction} state
                 glUniformMatrix4fv locView 1 0 (toList $ toGl $ standardViewMatrix cameraDirection)
-                   
-                traverse (\entity => render entity (camera state) (\_ => pure ())) (entities state)
+
+                traverse (\entity => render entity (setViewMatrix state entity)) (entities state)
                    
                 glSwapWindow $ window state
-
                    
 camera : Camera
 camera = MkCamera [0.0, 0.0, 0.0] (Degree 45) 0.1 100.0 [0.0, 0.0, -1.0]
 
 display : Display
-display = MkDisplay 640 480
+display = MkDisplay 800 600
 
 main : IO ()
 main = do 
@@ -134,10 +154,11 @@ main = do
                          e <- pollEvent
                          case e of
                            Just AppQuit => return ()
-                           Just event   => do draw state
-                                              --handle r event
-                                              putStrLn $ "event" ++ (show event)
-                                              eventLoop $ update event state
+                           Just event   => do 
+                             draw state
+                             --handle r event
+                             --putStrLn $ "event" ++ (show event)
+                             eventLoop $ update event state
                            _            => eventLoop state
 
 

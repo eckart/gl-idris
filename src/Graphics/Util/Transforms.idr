@@ -170,9 +170,18 @@ record Quaternion where
   constructor Q
   scalar : Double
   vector : Vect 3 Double
+  
+realPart : Quaternion -> Double
+realPart = scalar
+
+imagPart : Quaternion -> Vect 3 Double
+imagPart = vector
 
 instance Show Quaternion where
   show (Q s (v1 :: v2 :: v3 :: [])) = (show s)++" + " ++ (show v1) ++"i + "++ (show v2) ++ "k + "++ (show v3)++"j"
+
+instance Eq Quaternion where
+    (==) q p = realPart q == realPart p && imagPart q == imagPart p
 
 ||| returns the quaternion as a 4 dimensional Vector with the scalar part last
 ||| this corresponds to the representation as a (x,y,z,w) vector
@@ -199,3 +208,49 @@ qinverse : Quaternion -> Quaternion
 qinverse q@(Q s v) = let q' = s :: v
                          q'' = (1 / (q' <:> q'))
                      in Q (s / q'') (scalar q'' v)
+                     
+qnormalize : Quaternion -> Quaternion
+qnormalize q = fromVect $ normalize (toVect q)                    
+
+
+-- ----------------------------------------------------------------- [ Algenbraic Classes for Quaternions ]
+
+instance Semigroup Quaternion where
+  (<+>) = qsum
+
+instance Monoid Quaternion where
+  neutral = Q 0 [0, 0, 0]
+
+instance Group Quaternion where
+  inverse (Q s v) = Q (-1*s) (scalar (-1) v)
+
+instance AbelianGroup Quaternion where {}
+
+instance Ring Quaternion where
+  (<.>) = qmultiply
+
+instance RingWithUnity Quaternion where
+  unity = Q 1 [0,0,0]
+
+instance Num Quaternion where
+    (+) = qsum
+    (-) = (<->)
+    (*) = qmultiply
+    fromInteger x = Q (fromInteger x) [0,0,0]
+    abs q = Q (qnorm q) [0,0,0]
+      
+
+
+-- ----------------------------------------------------------------- [ Quaternion Rotation ]
+
+qrotate : Vect 3 Double -> Quaternion -> Vect 3 Double
+qrotate v q = let p  = Q 0 v        -- make the vector a quaternion
+                  q' = qnormalize q -- normalize the rotation quaternion (until we have unit quaternions as a type)
+              in imagPart $ q' <.> p <.> (conjugate q')
+
+
+{--
+data Bounded : Int -> Set where
+BInt : (x:Int) -> so (x<i) -> Bounded i;
+
+--}

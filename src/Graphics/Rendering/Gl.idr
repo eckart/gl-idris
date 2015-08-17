@@ -40,46 +40,6 @@ toList' (x :: xs) = (toList x) ++ toList' xs
 
 -- ----------------------------------------------------------------- [ Simple API ]
 
-||| contains the display / viewport dimension
-public
-record Display where
-  constructor MkDisplay
-  width : Int
-  height : Int
-  
-||| returns the aspect ratio of a disply
-public 
-aspectRatio : Display -> Double
-aspectRatio (MkDisplay width height) = (cast width) / (cast height)
-
-
-||| different lighting models for shading
-public
-data Light : Type where
-  ||| a point light
-  ||| @ position position of the light
-  ||| @ color color of the light
-  PointLight: (position: Vec3) -> (color: Vec3) -> Light
-  ||| a directional (sun) light
-  ||| @ direction the direction vector (i.e. the angle) of the light 
-  DirectionalLight: (direction: Vec3) -> (color: Vec3) -> Light
-
-||| camera parameterers
-||| the values in this data type will be used to calculate the view and perspective
-||| projection matrices 
-public 
-record Camera where
-  constructor MkCamera
-  ||| the 3D position of the camera
-  position : Vec3
-  ||| field of view of the camera
-  fov : Angle
-  ||| near plane limit of the camera frustum
-  nearPlane : Double
-  ||| far plane limit of the camera frustum
-  farPlane : Double
-  ||| the direction of the camera as a vector
-  direction : Vec3
 
 ||| location of a texture on the GPU
 public
@@ -178,6 +138,12 @@ createModel (UvMesh positions normals uvs indices) textures = do
   glBufferData GL_ELEMENT_ARRAY_BUFFER (is * (cast $ length indices)) ptr GL_STATIC_DRAW
   free ptr
 
+  glDisableVertexAttribArray 2 -- uvs
+  glDisableVertexAttribArray 1 -- normals
+  glDisableVertexAttribArray 0 -- positions
+
+  glBindVertexArray 0
+
   pure $ TexturedModel vaoLoc [positionBuffer, normalBuffer, uvBuffer, indexBuffer] (cast $ length indices) textures
 
 
@@ -221,18 +187,26 @@ data Entity : Type -> Type where
   
       
 public 
-render : Entity a -> Camera -> (prepare: a -> IO ()) -> IO ()
-render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) entityPosition rotation location val) camera prepare = do
+render : Entity a -> (prepare: a -> IO ()) -> IO ()
+render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) entityPosition rotation location val) prepare = do
   glBindVertexArray vao
+  glEnableVertexAttribArray 0
+  glEnableVertexAttribArray 1
+  glEnableVertexAttribArray 2
+  
   glUseProgram prog
   
-  let pos = entityPosition <-> (position camera)
-  let transform = (translate pos) <> (rotate rotation) <> (scaleAll 1)
-  glUniformMatrix4fv location 1 0 (toList $ toGl transform)
   prepare val
+
   traverse (\t => glBindTexture GL_TEXTURE_2D (textureLocation t)) textures
   
   glDrawElements GL_TRIANGLES numIndices GL_UNSIGNED_INT prim__null
+  
+  glDisableVertexAttribArray 2 -- uvs
+  glDisableVertexAttribArray 1 -- normals
+  glDisableVertexAttribArray 0 -- positions
+  
+  glBindVertexArray 0
   pure ()
 
 
