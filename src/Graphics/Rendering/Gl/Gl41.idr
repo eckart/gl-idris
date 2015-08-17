@@ -1066,7 +1066,8 @@ namespace TextureTarget
     GL_TEXTURE_BASE_LEVEL     | 
     GL_TEXTURE_MAX_LEVEL      | 
     GL_TEXTURE_MAX_LOD        | 
-    GL_TEXTURE_MIN_LOD       
+    GL_TEXTURE_MIN_LOD        | 
+    GL_TEXTURE_CUBE_MAP      
 
   instance GlEnum TextureTarget where
     toGlInt GL_PROXY_TEXTURE_1D       = 0x8063
@@ -1079,6 +1080,7 @@ namespace TextureTarget
     toGlInt GL_TEXTURE_MAX_LEVEL      = 0x813D
     toGlInt GL_TEXTURE_MAX_LOD        = 0x813B
     toGlInt GL_TEXTURE_MIN_LOD        = 0x813A
+    toGlInt GL_TEXTURE_CUBE_MAP       = 0x8513
 
 namespace TextureWrapMode 
   data TextureWrapMode = 

@@ -51,6 +51,8 @@ int idr_init_glew();
 
 GLuint png_texture_load(const char * file_name);
 
+int png_texture(GLenum target, GLint level, const char * file_name);
+
 void idr_main_loop();
 
 void printShaderLog(int shaderId);

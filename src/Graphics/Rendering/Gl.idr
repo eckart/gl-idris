@@ -210,9 +210,10 @@ render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _)
   pure ()
 
 
+||| load a png file to the currently bound texture
 public 
-glLoadPNGTexture : String -> IO Int
-glLoadPNGTexture filename = foreign FFI_C "png_texture_load" (String -> IO Int) filename
+glLoadPNGTexture : Int -> Int -> String -> IO Int
+glLoadPNGTexture target level filename = foreign FFI_C "png_texture" (Int -> Int -> String -> IO Int) target level filename
 
 
 public 
@@ -220,7 +221,10 @@ loadTexture : String -> Fin 30 -> IO Texture
 loadTexture filename index = do
   putStrLn $ "Loading " ++ filename ++ " to texture unit " ++ (show $ finToNat index)
   glActiveTexture (GL_TEXTURE0 + (cast $ finToNat index))
-  texture <- glLoadPNGTexture filename
+  (texture :: _) <- glGenTextures 1 
+  glBindTexture GL_TEXTURE_2D texture
+
+  ret <- glLoadPNGTexture (toGlInt Graphics.Rendering.Gl.GL41.TextureTarget.GL_TEXTURE_2D) 0 filename
 
   -- the texture is bound ... so we can set some params
   glTexParameteri GL_TEXTURE_2D GL_TEXTURE_WRAP_S GL_CLAMP_TO_EDGE
@@ -228,6 +232,7 @@ loadTexture filename index = do
   glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MIN_FILTER GL_LINEAR
   glTexParameteri GL_TEXTURE_2D GL_TEXTURE_MAG_FILTER GL_LINEAR
   pure $ MkTexture texture
+ 
  
 public 
 deleteTextures : List Texture -> IO ()
