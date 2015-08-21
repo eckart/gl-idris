@@ -26,11 +26,13 @@ glewInit = foreign FFI_C "idr_init_glew" (IO Int)
 
 -- ----------------------------------------------------------------- [ Helpers ]
 
-loadDoubleData : List Double -> IO ()
-loadDoubleData data' = do
+||| upload a list of doubles to the GPU into an array buffer
+public
+loadDoubleData : BufferUsageARB -> List Double -> IO ()
+loadDoubleData usage data' = do
   ds <- sizeofDouble
   ptr <- doublesToBuffer data'
-  glBufferData GL_ARRAY_BUFFER (ds * (cast $ length data')) ptr GL_STATIC_DRAW
+  glBufferData GL_ARRAY_BUFFER (ds * (cast $ length data')) ptr usage
   free ptr
   pure ()
 
@@ -118,17 +120,17 @@ createModel (UvMesh positions normals uvs indices) textures = do
   (positionBuffer :: normalBuffer :: uvBuffer :: indexBuffer :: _) <- glGenBuffers 4
 
   glBindBuffer GL_ARRAY_BUFFER positionBuffer
-  loadDoubleData (toList' positions)
+  loadDoubleData GL_STATIC_DRAW (toList' positions)
   glEnableVertexAttribArray 0
   glVertexAttribPointer 0 3 GL_DOUBLE GL_FALSE 0 prim__null
 
   glBindBuffer GL_ARRAY_BUFFER normalBuffer
-  loadDoubleData (toList' normals)
+  loadDoubleData GL_STATIC_DRAW (toList' normals) 
   glEnableVertexAttribArray 1
   glVertexAttribPointer 1 3 GL_DOUBLE GL_FALSE 0 prim__null
 
   glBindBuffer GL_ARRAY_BUFFER uvBuffer
-  loadDoubleData (toList' uvs)
+  loadDoubleData GL_STATIC_DRAW (toList' uvs)
   glEnableVertexAttribArray 2
   glVertexAttribPointer 2 2 GL_DOUBLE GL_FALSE 0 prim__null
         

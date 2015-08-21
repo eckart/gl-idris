@@ -17,8 +17,8 @@ flatten ((a,b,c,d) :: xs) = [a,b,c,d] ++ (flatten xs)
 
 showError : String -> IO ()
 showError msg = do err <- glGetError
-                   if err == 0 
-                   then putStrLn $ msg ++ " -  OK "
+                   if err == 0
+                   then putStrLn $ msg ++ " -  OK " 
                    else putStrLn $ msg ++ (show err)
 
 record Shaders where
@@ -26,30 +26,30 @@ record Shaders where
   vertexShader : Int
   fragmentShader : Int
   program : Int
-  
+
 
 createShaders : IO Shaders
 createShaders = do
   glGetError
   vertexShader <- glCreateShader GL_VERTEX_SHADER
-  
+
   showError "create vertex shader "
   vtx <- readFile "shader.vtx"
   glShaderSource vertexShader 1 [vtx] [(cast $ length vtx)]
   glCompileShader vertexShader
-  
+
   fragmentShader <- glCreateShader GL_FRAGMENT_SHADER
   showError "create fragment shader "
 
   frg <- readFile "shader.frg"
   glShaderSource fragmentShader 1 [frg] [(cast $ length frg)]
-  glCompileShader fragmentShader  
-  
+  glCompileShader fragmentShader
+
   program <- glCreateProgram
   glAttachShader program vertexShader
   glAttachShader program fragmentShader
   showError "attach shaders "
-  
+
   glLinkProgram program
   showError "link "
   glUseProgram program
@@ -59,7 +59,7 @@ createShaders = do
   printShaderLog fragmentShader
 
   pure $ MkShaders vertexShader fragmentShader program
-  
+
 
 destroyShaders : Shaders -> IO ()
 destroyShaders (MkShaders shader1 shader2 program) = do
@@ -78,7 +78,7 @@ vertices = [
     (  0.0,  0.8, 0.0, 1.0),
     (  0.8, -0.8, 0.0, 1.0)
   ]
-  
+
 colors : List (Double, Double, Double, Double)
 colors = [
     (1.0, 0.0, 0.0, 1.0),
@@ -91,7 +91,7 @@ record Vao where
   id : Int
   buffer1 : Int
   buffer2 : Int
-    
+
 createBuffers : IO Vao
 createBuffers = do
   ds <- sizeofDouble
@@ -102,12 +102,12 @@ createBuffers = do
   glBindVertexArray vao
   (buffer :: colorBuffer :: _) <- glGenBuffers 2
   glBindBuffer GL_ARRAY_BUFFER buffer
-  
+
   let data1 = (flatten vertices)
   ptr <- doublesToBuffer data1
   glBufferData GL_ARRAY_BUFFER (ds * (cast $ length data1)) ptr GL_STATIC_DRAW
   free ptr
-  
+
   showError "vertex buffer data "
   glEnableVertexAttribArray 0
   glVertexAttribPointer 0 4 GL_DOUBLE GL_FALSE 0 prim__null
@@ -131,13 +131,13 @@ destroyBuffers : Vao -> IO ()
 destroyBuffers (MkVao vao buffer colorBuffer) = do
   glDisableVertexAttribArray 1
   glDisableVertexAttribArray 0
-  
+
   glBindBuffer GL_ARRAY_BUFFER 0
 
   glDeleteBuffers 2 [buffer, colorBuffer]
 
   glBindVertexArray 0
-  
+
   glDeleteVertexArrays 1 [vao]
 
   showError "destroy buffers "
@@ -145,7 +145,7 @@ destroyBuffers (MkVao vao buffer colorBuffer) = do
 data State = MkState GlfwWindow Vao Shaders
 
 draw : State -> IO ()
-draw (MkState win vao (MkShaders _ _ prog)) = do 
+draw (MkState win vao (MkShaders _ _ prog)) = do
                    glClearColor 0 0 0 1
                    glClear GL_COLOR_BUFFER_BIT
                    glClear GL_DEPTH_BUFFER_BIT
@@ -154,8 +154,8 @@ draw (MkState win vao (MkShaders _ _ prog)) = do
 
                    glDrawArrays GL_TRIANGLES 0 3
                    glfwSwapBuffers win
-                   
-                   
+
+
 initDisplay : String -> Int -> Int -> IO GlfwWindow
 initDisplay title width height = do
   glfw <- glfwInit
@@ -185,14 +185,14 @@ main = do win <- initDisplay "Hello Idris" 640 480
           glfwDestroyWindow win
           glfwTerminate
           pure ()
-       where 
+       where
          eventLoop : State -> IO ()
          eventLoop state@(MkState win vao prog) = do
-                      draw state 
+                      draw state
                       glfwPollEvents
                       key <- glfwGetFunctionKey win GLFW_KEY_ESCAPE
                       shouldClose <- glfwWindowShouldClose win
                       if shouldClose || key == GLFW_PRESS
                       then pure ()
-                      else do 
+                      else do
                         eventLoop state
