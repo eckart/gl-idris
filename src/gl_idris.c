@@ -181,8 +181,10 @@ GLuint png_texture_load(const char * file_name)
     png_get_IHDR(png_ptr, info_ptr, &temp_width, &temp_height, &bit_depth, &color_type,
         NULL, NULL, NULL);
 
-    if (width){ *width = temp_width; }
-    if (height){ *height = temp_height; }
+    //if (width){ *width = temp_width; }
+    //if (height){ *height = temp_height; }
+    //*width = temp_width;
+    //*height = temp_height;
 
     //printf("%s: %lux%lu %d\n", file_name, temp_width, temp_height, color_type);
 
@@ -340,11 +342,6 @@ int png_texture(GLenum target, GLint level, const char * file_name) {
     png_get_IHDR(png_ptr, info_ptr, &temp_width, &temp_height, &bit_depth, &color_type,
         NULL, NULL, NULL);
 
-    if (width){ *width = temp_width; }
-    if (height){ *height = temp_height; }
-
-    //printf("%s: %lux%lu %d\n", file_name, temp_width, temp_height, color_type);
-
     if (bit_depth != 8)
     {
         fprintf(stderr, "%s: Unsupported bit depth %d.  Must be 8.\n", file_name, bit_depth);
@@ -437,4 +434,3 @@ void printShaderLog(int shaderId) {
       printf("shader sucessfully compiled\n");
     }
 }
-

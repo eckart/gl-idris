@@ -18,7 +18,7 @@ flatten ((a,b,c,d) :: xs) = [a,b,c,d] ++ (flatten xs)
 showError : String -> IO ()
 showError msg = do err <- glGetError
                    if err == 0
-                   then putStrLn $ msg ++ " -  OK " 
+                   then putStrLn $ msg ++ " -  OK "
                    else putStrLn $ msg ++ (show err)
 
 record Shaders where
