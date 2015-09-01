@@ -5,6 +5,7 @@ import Data.Matrix
 import Data.Floats
 import Data.Vect
 import Control.Algebra
+import Debug.Trace
 
 %access public
 
@@ -236,7 +237,7 @@ namespace Quaternions
   fromAxis : (rotation: Angle) -> (axis: Vect 3 Double) -> Quaternion
   fromAxis rot (bx :: by :: bz :: Nil) = 
     let a = (getRadians rot) / 2
-    in Q (cos a) [(sin a)*(cos bx), (sin a)*(cos by), (sin a)*(cos bz)]
+    in Q (cos a) [(sin a)*bx, (sin a)*by, (sin a)*bz]
 
   toMatrix : Quaternion -> TransformationMatrix
   toMatrix q@(Q w (x :: y :: z :: Nil)) = 
@@ -276,8 +277,9 @@ namespace Quaternions
   qnormalize : Quaternion -> Quaternion
   qnormalize q = fromVect $ normalize (toVect q)                
   
+  ||| x ^ y
   rpow : Double -> Double -> Double
-  rpow x y = let e = x * (log (abs y))
+  rpow y x = let e = x * (log (abs y))
              in if y < 0 
                 then 1 / (exp e)
                 else if y > 0
@@ -287,8 +289,12 @@ namespace Quaternions
   ||| q^t where t is a Real
   qpow : Quaternion -> Double -> Quaternion    
   qpow q@(Q s v) a = let e     = (rpow (qnorm q) a)
-                         theta = acos s / (qnorm q) 
-                     in Q (cos (s * theta)) (scalar (sin (s*theta)) v) 
+                         theta = acos (s / (qnorm q)) 
+                     in Q (e * cos (s * theta)) (scalar (sin (s*theta)) v) 
+  
+  ||| scalar multiplication
+  qscalar : Double -> Quaternion -> Quaternion
+  qscalar s (Q w v) = Q (s*w) (scalar s v)                   
 
   data GimbalPole = NorthPole | SouthPole | NoPole
 
@@ -302,6 +308,7 @@ namespace Quaternions
                           else if n' < -0.499 
                                then SouthPole
                                else NoPole
+
   gimbalMultiplier : GimbalPole -> Double
   gimbalMultiplier NoPole    = 0
   gimbalMultiplier NorthPole = 1
@@ -352,10 +359,8 @@ namespace Quaternions
                         vec   = cross (normalize v1) (normalize v2)
                     in fromAxis (Radians theta) vec    
 
-  {--
-  slerp : Quaternion -> Double -> Quaternion
-  slerp q t = ?slerp
 
+  {--
   slerpBetween : Vect (S n) Quaternion -> Quaternion
   slerpBetween qs = ?slerpBetween
 
@@ -399,5 +404,26 @@ namespace Quaternions
                     q' = qnormalize q -- normalize the rotation quaternion (until we have unit quaternions as a type)
                     in imagPart $ q' <.> p <.> (conjugate q')
 
-
+  ||| linear interpolation of quaternions
+  ||| TODO handle corner cases (sintheta < 0.00001)
+  slerp : Quaternion -> Quaternion -> Double -> Quaternion
+  slerp q0 q1 t = let n1 = qnormalize q0
+                      n2 = qnormalize q1
+                      theta = acos ((toVect n1) <:> (toVect n2))
+                      sintheta = sin theta
+                      weight1 = (sin (theta * (1-t))) / sintheta
+                      weight2 = (sin (theta*t)) / sintheta
+                  in ((qscalar weight1 n1) + (qscalar weight2 n2))
+                  
+{--
+// if theta = 180 degrees then result is not fully defined
+	// we could rotate around any axis normal to qa or qb
+	if (fabs(sinHalfTheta) < 0.001){ // fabs is floating point absolute
+		qm.w = (qa.w * 0.5 + qb.w * 0.5);
+		qm.x = (qa.x * 0.5 + qb.x * 0.5);
+		qm.y = (qa.y * 0.5 + qb.y * 0.5);
+		qm.z = (qa.z * 0.5 + qb.z * 0.5);
+		return qm;
+	}                  
+--}                     
 

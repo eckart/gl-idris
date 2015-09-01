@@ -4,7 +4,7 @@ import Data.Fin
 import Graphics.Util.Mesh
 import Graphics.Util.Transforms
 import public Graphics.Rendering.Gl.Types
-import Graphics.Rendering.Gl.Buffers
+import public Graphics.Rendering.Gl.Buffers
 import public Graphics.Rendering.Gl.Gl41
 import Data.Matrix
 import Data.Vect

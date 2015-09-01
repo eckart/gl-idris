@@ -4,7 +4,7 @@ import Control.Monad.Identity
 
 import Data.SortedMap as M
 
-import Lightyear.Core
+import Lightyear
 import Lightyear.Combinators
 import Lightyear.Strings
 
@@ -55,7 +55,7 @@ record Scientific where
   coefficient : Integer
   exponent : Integer
 
-scientificToFloat : Scientific -> Double
+scientificToFloat : Scientific -> Float
 scientificToFloat (MkScientific c e) = fromInteger c * exp
   where exp = if e < 0 then 1 / pow 10 (fromIntegerNat (- e))
                        else pow 10 (fromIntegerNat e)
@@ -71,6 +71,7 @@ parseScientific = do sign <- maybe 1 (const (-1)) `map` opt (char '-')
                                          (exponent - cast (length decimals))
   where fromDigits : List (Fin 10) -> Integer
         fromDigits = foldl (\a, b => 10 * a + cast b) 0
+
 
 double : Parser Double
 double = map scientificToFloat parseScientific
