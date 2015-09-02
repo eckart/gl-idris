@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/time.h>
 #include <idris_rts.h>
 #include <GL/glew.h>
 #include <png.h>
@@ -433,4 +434,30 @@ void printShaderLog(int shaderId) {
     } else {
       printf("shader sucessfully compiled\n");
     }
+}
+
+
+// returns the seconds + microseconds since epoch as an idris value
+void* idr_currentTimeMicros(VM* vm) 
+{
+  VAL idris_time;
+
+  struct timeval start;
+
+  int seconds, useconds;    
+
+  gettimeofday(&start, NULL);
+
+  seconds  = start.tv_sec;
+  useconds = start.tv_usec;
+
+  idris_requireAlloc(128); // Conservative!
+
+  idris_constructor(idris_time, vm, 0, 2, 0);
+  idris_setConArg(idris_time, 0, MKINT((intptr_t) seconds));
+  idris_setConArg(idris_time, 1, MKINT((intptr_t) useconds));
+  idris_doneAlloc(vm);
+
+  
+  return idris_time;
 }

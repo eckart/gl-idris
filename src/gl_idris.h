@@ -57,4 +57,8 @@ void idr_main_loop();
 
 void printShaderLog(int shaderId);
 
+
+// get current time - returns an idris value
+void* idr_currentTimeMicros(VM* vm);
+
 #endif

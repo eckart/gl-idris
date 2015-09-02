@@ -4,7 +4,7 @@ sourcedir = src
 modules = Graphics.Rendering.Gl.Buffers, Graphics.Rendering.Gl.Types, Graphics.Rendering.Config,
 	  Graphics.Rendering.Gl, Graphics.Rendering.Gl.Gl41, 
 	  Graphics.Util.Transforms, Graphics.Util.ObjLoader, Graphics.Util.Mesh,
-	  Effect.Gl
+	  Effect.Gl, Graphics.Util.Time
 
 opts = "-p effects -p contrib -p lightyear" 
 
