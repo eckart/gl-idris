@@ -25,5 +25,12 @@ instance Ord Time where
   compare (MicroTime s1 us1) (MicroTime s2 us2) = if (s1 < s2) then LT
                                                   else if (s1 > s2) then GT
                                                        else compare us1 us2
---difference : Time -> Time -> Integer
---difference (MicroTime s1 us1) (MicroTime s2 us2) = (s1 - s2) * 1000000 + (s)
+toMicros : Time -> Integer
+toMicros (MicroTime s ms) = (cast s) * 1000000 + (cast ms)
+
+fromMicros : Integer -> Time
+fromMicros t = MicroTime (fromInteger $ t `div` 1000000) (fromInteger $ t `mod` 1000000)
+
+difference : Time -> Time -> Time
+difference t1 t2 = fromMicros $ (toMicros t1) - (toMicros t2)
+
