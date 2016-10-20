@@ -6,7 +6,6 @@ import Graphics.Rendering.Gl.Gl41
 import Graphics.Rendering.Gl
 import Graphics.Util.Glfw
 import Graphics.Rendering.Config
-import Data.Floats
 
 %include C "GL/glew.h"
 %flag C "-Wno-pointer-sign"
@@ -28,20 +27,20 @@ record Shaders where
   program : Int
 
 
-createShaders : IO Shaders
+createShaders : IO (Either FileError Shaders)
 createShaders = do
   glGetError
   vertexShader <- glCreateShader GL_VERTEX_SHADER
 
   showError "create vertex shader "
-  vtx <- readFile "shader.vtx"
+  Right vtx <- readFile "shader.vtx" | Left err => pure (Left err)
   glShaderSource vertexShader 1 [vtx] [(cast $ length vtx)]
   glCompileShader vertexShader
 
   fragmentShader <- glCreateShader GL_FRAGMENT_SHADER
   showError "create fragment shader "
 
-  frg <- readFile "shader.frg"
+  Right frg <- readFile "shader.frg" | Left err => pure (Left err)
   glShaderSource fragmentShader 1 [frg] [(cast $ length frg)]
   glCompileShader fragmentShader
 
@@ -58,7 +57,7 @@ createShaders = do
   printShaderLog vertexShader
   printShaderLog fragmentShader
 
-  pure $ MkShaders vertexShader fragmentShader program
+  pure $ Right (MkShaders vertexShader fragmentShader program)
 
 
 destroyShaders : Shaders -> IO ()
@@ -171,13 +170,15 @@ initDisplay title width height = do
   putStrLn info
   glEnable GL_DEPTH_TEST
   glDepthFunc GL_LESS
-  return win
+  pure win
 
 main : IO ()
 main = do win <- initDisplay "Hello Idris" 640 480
           glfwSetInputMode win GLFW_STICKY_KEYS 1
           glfwSwapInterval 0
-          shaders <- createShaders
+          Right shaders <- createShaders | Left err => do
+            putStrLn $ show err
+            pure()
           vao <- createBuffers
           eventLoop $ MkState win vao shaders
           destroyBuffers vao

@@ -3,7 +3,7 @@ module Graphics.Rendering.Gl.Buffers
 %include C "gl_idris.h"
 %link C "gl_idris.o"
 
-%access public
+%access public export
 
 free : Ptr -> IO ()
 free ptr = foreign FFI_C "free" (Ptr -> IO ()) ptr

@@ -20,14 +20,14 @@ import Control.Algebra
 -- GLEW 
 
 ||| initialises the GL function pointers
-public
+export
 glewInit : IO Int
 glewInit = foreign FFI_C "idr_init_glew" (IO Int) 
 
 -- ----------------------------------------------------------------- [ Helpers ]
 
 ||| upload a list of doubles to the GPU into an array buffer
-public
+export
 loadDoubleData : BufferUsageARB -> List Double -> IO ()
 loadDoubleData usage data' = do
   ds <- sizeofDouble
@@ -44,14 +44,14 @@ toList' (x :: xs) = (toList x) ++ toList' xs
 
 
 ||| location of a texture on the GPU
-public
+export
 record Texture where
   constructor MkTexture
   textureLocation: Int
   
 
 ||| locations of a shading program
-public
+export
 record Shader where
   constructor MkShader
   ||| location of the shader program
@@ -59,29 +59,29 @@ record Shader where
   ||| locations of all shaders for this program. minimum of two shaders is required (vertex and fragment shader)
   shaders: Vect (S (S n)) Int
 
+||| create a shader from a pair of a shader type an a string containing the shader source    
 createShader : (GLenum, String) -> IO Int
-createShader (shaderType, filename) = do
+createShader (shaderType, shaderSource) = do
   shaderLoc <- glCreateShader shaderType
-  source <- readFile filename
-  glShaderSource shaderLoc 1 [source] [(cast $ length source)]
+  glShaderSource shaderLoc 1 [shaderSource] [(cast $ length shaderSource)]
   glCompileShader shaderLoc
   pure shaderLoc
 
+
 ||| creates and returns a shader program
-||| @ filenames a list of pairs of shader type and file name
-public
-createShaders : (filenames: Vect (S (S n)) (GLenum, String)) -> IO Shader
-createShaders filenames = do
-  locs <- traverse createShader filenames
+||| @ shaderSpec a list of pairs of shader type and shader source
+export
+createShaders : (shaderSpec: Vect (S (S n)) (GLenum, String)) -> IO Shader
+createShaders shaderSpec = do
+  locs <- traverse createShader shaderSpec
   programLoc <- glCreateProgram
   traverse (glAttachShader programLoc) locs
   glLinkProgram programLoc
   glUseProgram 0
-  
   pure $ MkShader programLoc locs
 
 ||| deletes the shader program
-public    
+export
 deleteShaders : Shader -> IO ()
 deleteShaders (MkShader programLoc shaderLocs) = do
   glUseProgram 0
@@ -96,7 +96,7 @@ deleteShaders (MkShader programLoc shaderLocs) = do
 ||| the minumum information needed is the location of the vertex array object (VAO)
 ||| and the locations of the vertex buffer objects (VBO)
 ||| textures are optional
-public
+export
 data Model : Type where
   ||| creates a textured model 
   ||| @ vao the location of the vertex array object
@@ -111,7 +111,7 @@ data Model : Type where
 ||| creates a model from a mesh and some texture locations
 ||| @ m the mesh. should be uv unwrapped
 ||| @ textures texture locations we need to bind when using the model
-public
+export
 createModel : (m: Mesh) -> (textures: (Vect n Texture)) -> IO Model
 createModel (UvMesh positions normals uvs indices) textures = do
   (vaoLoc :: _) <- glGenVertexArrays 1
@@ -149,7 +149,7 @@ createModel (UvMesh positions normals uvs indices) textures = do
   pure $ TexturedModel vaoLoc [positionBuffer, normalBuffer, uvBuffer, indexBuffer] (cast $ length indices) textures
 
 
-public
+export
 deleteModel : Model -> IO ()
 deleteModel (TexturedModel vao vbos _ _) = do
   glDisableVertexAttribArray 2 -- uvs
@@ -170,7 +170,7 @@ deleteModel (TexturedModel vao vbos _ _) = do
 ||| an entity is like an instance of a model. it consists of the model an instance
 ||| specific data like location, rotation, etc.
 ||| 
-public
+export
 data Entity : Type -> Type where
   ||| a simple entity: model, shader, texture and instance data
   ||| @ model the model ('class') of the entity
@@ -188,7 +188,7 @@ data Entity : Type -> Type where
                -> Entity a
   
       
-public 
+export 
 render : Entity a -> (prepare: a -> IO ()) -> IO ()
 render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _) entityPosition rotation location val) prepare = do
   glBindVertexArray vao
@@ -213,12 +213,12 @@ render (SimpleEntity (TexturedModel vao _ numIndices textures) (MkShader prog _)
 
 
 ||| load a png file to the currently bound texture
-public 
+export 
 glLoadPNGTexture : Int -> Int -> String -> IO Int
 glLoadPNGTexture target level filename = foreign FFI_C "png_texture" (Int -> Int -> String -> IO Int) target level filename
 
 
-public 
+export 
 loadTexture : String -> Fin 30 -> IO Texture
 loadTexture filename index = do
   putStrLn $ "Loading " ++ filename ++ " to texture unit " ++ (show $ finToNat index)
@@ -236,21 +236,21 @@ loadTexture filename index = do
   pure $ MkTexture texture
  
  
-public 
+export 
 deleteTextures : List Texture -> IO ()
 deleteTextures xs = glDeleteTextures (cast $ length xs) $ map textureLocation xs
 
 -- ----------------------------------------------------------------- [ Helper ]
 
-public 
+export 
 printShaderLog : Int -> IO ()
 printShaderLog id = foreign FFI_C "printShaderLog" (Int -> IO()) id
 
-public
+export
 glGetInfo : IO String
 glGetInfo = do vendor   <- glGetString GL_VENDOR
                renderer <- glGetString GL_RENDERER
                version  <- glGetString GL_VERSION
-               return $ foldl1 (++) (the (List String) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"])
+               pure $ foldl1 (++) (the (List String) ["Vendor = ", vendor, "\nRenderer = ", renderer, "\nVersion = ", version, "\n"])
 
 

@@ -1,24 +1,7 @@
 module Graphics.Rendering.Gl.Types
 
-{--
-  data C_IntTypes : Type -> Type where
-       C_IntChar   : C_IntTypes Char
-       C_IntNative : C_IntTypes Int
-       C_IntBits8  : C_IntTypes Bits8
-       C_IntBits16 : C_IntTypes Bits16
-       C_IntBits32 : C_IntTypes Bits32
-       C_IntBits64 : C_IntTypes Bits64
+%access public export
 
-  -- Supported C foreign types
-  data C_Types : Type -> Type where
-       C_Str   : C_Types String
-       C_Float : C_Types Float
-       C_Ptr   : C_Types Ptr
-       C_MPtr  : C_Types ManagedPtr
-       C_Unit  : C_Types ()
-       C_Any   : C_Types (Raw a)
-       C_IntT  : C_IntTypes i -> C_Types i
---}
 GLenum : Type
 GLenum = Int
 

@@ -7,6 +7,7 @@ import Data.SortedMap as M
 import Lightyear
 import Lightyear.Combinators
 import Lightyear.Strings
+import Lightyear.Char
 
 import Graphics.Util.Mesh
 
@@ -21,7 +22,7 @@ uv u v = [u, v]
 Index : Type
 Index = (Int, Int, Int)                  
 
-abstract
+export
 data ObjLine
   = Position Vec3
   | TextureCoord Vec2
@@ -31,7 +32,7 @@ data ObjLine
   | Ignored String
   
   
-instance Show ObjLine where
+implementation Show ObjLine where
   show (Position v)       = "Position " ++ (show v)
   show (TextureCoord uv)  = "TextureCoord " ++ (show uv)
   show (Normal v)         = "Normal " ++ (show v)
@@ -41,10 +42,10 @@ instance Show ObjLine where
   
 -- ------------------------------------------------------------------ [ Tokens ]
 
-notEol : Monad m => ParserT m String Char
+notEol : Monad m => ParserT String m Char
 notEol = satisfy (\s => not (isNL s))
 
-eol : Monad m => ParserT m String Char
+eol : Monad m => ParserT String m Char
 eol = satisfy (\s => not (isNL s))
 
 -- ---------------------------------------------------------- [ Double Parser ]
@@ -55,7 +56,7 @@ record Scientific where
   coefficient : Integer
   exponent : Integer
 
-scientificToFloat : Scientific -> Float
+scientificToFloat : Scientific -> Double
 scientificToFloat (MkScientific c e) = fromInteger c * exp
   where exp = if e < 0 then 1 / pow 10 (fromIntegerNat (- e))
                        else pow 10 (fromIntegerNat e)
@@ -147,7 +148,8 @@ processLines lines = processLines' lines [] [] [] []
                                                                   
                                                                                                                               
 mapByIndex : List a -> M.SortedMap Int a
-mapByIndex xs = mapByIndex' (cast $ (length xs) - 1) empty (reverse xs)
+mapByIndex [] = M.empty
+mapByIndex (x :: xs) = mapByIndex' (cast $ (length xs)) empty (reverse (x :: xs))
                 where mapByIndex' : Int -> SortedMap Int a -> List a -> SortedMap Int a
                       mapByIndex' _ s        [] = s
                       mapByIndex' i s (x :: xs) = mapByIndex' (i-1) (insert i x s) xs
@@ -210,18 +212,18 @@ computeModel objLines =
     
   in UvMesh positions norms uvs posn
 
-public 
-loadObj : (filename: String) -> IO Mesh
-loadObj fname = do handle <- openFile fname Read
+export
+loadObj : (filename: String) -> IO (Either FileError Mesh)
+loadObj fname = do Right handle <- openFile fname Read | Left err => pure (Left err)
                    objLines <- parseFile' handle [] 
                    closeFile handle
-                   pure $ computeModel objLines
+                   pure $ Right (computeModel objLines)
                 where
                    partial
                    parseFile' : File -> List ObjLine -> IO (List ObjLine)
                    parseFile' h acc =
-                     do x <- feof h
-                        if not x then do l <- fread h
+                     do x <- fEOF h
+                        if not x then do Right l <- fGetLine h | Left err => pure acc
                                          parseFile' h ((parseLine l) ++ acc)
-                        else return $ reverse acc
+                        else pure $ reverse acc
                     

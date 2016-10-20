@@ -9,7 +9,7 @@ import Graphics.Rendering.Gl.Buffers
 
 %include C "gl_idris.h"
 %link C "gl_idris.o"
-
+%access public export
 
 namespace VertexAttribPointerType 
   data VertexAttribPointerType = 
@@ -22,7 +22,7 @@ namespace VertexAttribPointerType
     GL_UNSIGNED_INT           | 
     GL_UNSIGNED_SHORT        
 
-  instance GlEnum VertexAttribPointerType where
+  implementation GlEnum VertexAttribPointerType where
     toGlInt GL_BYTE                   = 0x1400
     toGlInt GL_DOUBLE                 = 0x140A
     toGlInt GL_FLOAT                  = 0x1406
@@ -38,7 +38,7 @@ namespace AttribMask
     GL_DEPTH_BUFFER_BIT       | 
     GL_STENCIL_BUFFER_BIT    
 
-  instance GlEnum AttribMask where
+  implementation GlEnum AttribMask where
     toGlInt GL_COLOR_BUFFER_BIT       = 0x00004000
     toGlInt GL_DEPTH_BUFFER_BIT       = 0x00000100
     toGlInt GL_STENCIL_BUFFER_BIT     = 0x00000400
@@ -54,7 +54,7 @@ namespace AlphaFunction
     GL_NEVER                  | 
     GL_NOTEQUAL              
 
-  instance GlEnum AlphaFunction where
+  implementation GlEnum AlphaFunction where
     toGlInt GL_ALWAYS                 = 0x0207
     toGlInt GL_EQUAL                  = 0x0202
     toGlInt GL_GEQUAL                 = 0x0206
@@ -75,7 +75,7 @@ namespace BlendingFactorDest
     GL_SRC_COLOR              | 
     GL_ZERO                  
 
-  instance GlEnum BlendingFactorDest where
+  implementation GlEnum BlendingFactorDest where
     toGlInt GL_DST_ALPHA              = 0x0304
     toGlInt GL_ONE                    = 1
     toGlInt GL_ONE_MINUS_DST_ALPHA    = 0x0305
@@ -97,7 +97,7 @@ namespace BlendingFactorSrc
     GL_SRC_ALPHA_SATURATE     | 
     GL_ZERO                  
 
-  instance GlEnum BlendingFactorSrc where
+  implementation GlEnum BlendingFactorSrc where
     toGlInt GL_DST_ALPHA              = 0x0304
     toGlInt GL_DST_COLOR              = 0x0306
     toGlInt GL_ONE                    = 1
@@ -113,7 +113,7 @@ namespace Boolean
     GL_FALSE                  | 
     GL_TRUE                  
 
-  instance GlEnum Boolean where
+  implementation GlEnum Boolean where
     toGlInt GL_FALSE                  = 0
     toGlInt GL_TRUE                   = 1
 
@@ -123,7 +123,7 @@ namespace ClearBufferMask
     GL_DEPTH_BUFFER_BIT       | 
     GL_STENCIL_BUFFER_BIT    
 
-  instance GlEnum ClearBufferMask where
+  implementation GlEnum ClearBufferMask where
     toGlInt GL_COLOR_BUFFER_BIT       = 0x00004000
     toGlInt GL_DEPTH_BUFFER_BIT       = 0x00000100
     toGlInt GL_STENCIL_BUFFER_BIT     = 0x00000400
@@ -139,7 +139,7 @@ namespace ClipPlaneName
     GL_CLIP_DISTANCE6         | 
     GL_CLIP_DISTANCE7        
 
-  instance GlEnum ClipPlaneName where
+  implementation GlEnum ClipPlaneName where
     toGlInt GL_CLIP_DISTANCE0         = 0x3000
     toGlInt GL_CLIP_DISTANCE1         = 0x3001
     toGlInt GL_CLIP_DISTANCE2         = 0x3002
@@ -155,7 +155,7 @@ namespace ColorMaterialFace
     GL_FRONT                  | 
     GL_FRONT_AND_BACK        
 
-  instance GlEnum ColorMaterialFace where
+  implementation GlEnum ColorMaterialFace where
     toGlInt GL_BACK                   = 0x0405
     toGlInt GL_FRONT                  = 0x0404
     toGlInt GL_FRONT_AND_BACK         = 0x0408
@@ -171,7 +171,7 @@ namespace ColorPointerType
     GL_UNSIGNED_INT           | 
     GL_UNSIGNED_SHORT        
 
-  instance GlEnum ColorPointerType where
+  implementation GlEnum ColorPointerType where
     toGlInt GL_BYTE                   = 0x1400
     toGlInt GL_DOUBLE                 = 0x140A
     toGlInt GL_FLOAT                  = 0x1406
@@ -185,7 +185,7 @@ namespace ContextFlagMask
   data ContextFlagMask = 
     GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT
 
-  instance GlEnum ContextFlagMask where
+  implementation GlEnum ContextFlagMask where
     toGlInt GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT = 0x00000001
 
 namespace ContextProfileMask 
@@ -193,7 +193,7 @@ namespace ContextProfileMask
     GL_CONTEXT_COMPATIBILITY_PROFILE_BIT | 
     GL_CONTEXT_CORE_PROFILE_BIT
 
-  instance GlEnum ContextProfileMask where
+  implementation GlEnum ContextProfileMask where
     toGlInt GL_CONTEXT_COMPATIBILITY_PROFILE_BIT = 0x00000002
     toGlInt GL_CONTEXT_CORE_PROFILE_BIT = 0x00000001
 
@@ -203,7 +203,7 @@ namespace CullFaceMode
     GL_FRONT                  | 
     GL_FRONT_AND_BACK        
 
-  instance GlEnum CullFaceMode where
+  implementation GlEnum CullFaceMode where
     toGlInt GL_BACK                   = 0x0405
     toGlInt GL_FRONT                  = 0x0404
     toGlInt GL_FRONT_AND_BACK         = 0x0408
@@ -219,7 +219,7 @@ namespace DepthFunction
     GL_NEVER                  | 
     GL_NOTEQUAL              
 
-  instance GlEnum DepthFunction where
+  implementation GlEnum DepthFunction where
     toGlInt GL_ALWAYS                 = 0x0207
     toGlInt GL_EQUAL                  = 0x0202
     toGlInt GL_GEQUAL                 = 0x0206
@@ -242,7 +242,7 @@ namespace DrawBufferMode
     GL_NONE                   | 
     GL_RIGHT                 
 
-  instance GlEnum DrawBufferMode where
+  implementation GlEnum DrawBufferMode where
     toGlInt GL_BACK                   = 0x0405
     toGlInt GL_BACK_LEFT              = 0x0402
     toGlInt GL_BACK_RIGHT             = 0x0403
@@ -260,7 +260,7 @@ namespace DrawElementsType
     GL_UNSIGNED_SHORT         | 
     GL_UNSIGNED_INT          
 
-  instance GlEnum DrawElementsType where
+  implementation GlEnum DrawElementsType where
     toGlInt GL_UNSIGNED_BYTE          = 0x1401
     toGlInt GL_UNSIGNED_SHORT         = 0x1403
     toGlInt GL_UNSIGNED_INT           = 0x1405
@@ -282,7 +282,7 @@ namespace EnableCap
     GL_TEXTURE_1D             | 
     GL_TEXTURE_2D            
 
-  instance GlEnum EnableCap where
+  implementation GlEnum EnableCap where
     toGlInt GL_BLEND                  = 0x0BE2
     toGlInt GL_COLOR_LOGIC_OP         = 0x0BF2
     toGlInt GL_CULL_FACE              = 0x0B44
@@ -307,7 +307,7 @@ namespace ErrorCode
     GL_NO_ERROR               | 
     GL_OUT_OF_MEMORY         
 
-  instance GlEnum ErrorCode where
+  implementation GlEnum ErrorCode where
     toGlInt GL_INVALID_ENUM           = 0x0500
     toGlInt GL_INVALID_FRAMEBUFFER_OPERATION = 0x0506
     toGlInt GL_INVALID_OPERATION      = 0x0502
@@ -320,7 +320,7 @@ namespace FogCoordinatePointerType
     GL_FLOAT                  | 
     GL_DOUBLE                
 
-  instance GlEnum FogCoordinatePointerType where
+  implementation GlEnum FogCoordinatePointerType where
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_DOUBLE                 = 0x140A
 
@@ -328,7 +328,7 @@ namespace FogMode
   data FogMode = 
     GL_LINEAR                
 
-  instance GlEnum FogMode where
+  implementation GlEnum FogMode where
     toGlInt GL_LINEAR                 = 0x2601
 
 namespace FogPointerTypeEXT 
@@ -336,7 +336,7 @@ namespace FogPointerTypeEXT
     GL_FLOAT                  | 
     GL_DOUBLE                
 
-  instance GlEnum FogPointerTypeEXT where
+  implementation GlEnum FogPointerTypeEXT where
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_DOUBLE                 = 0x140A
 
@@ -345,7 +345,7 @@ namespace FogPointerTypeIBM
     GL_FLOAT                  | 
     GL_DOUBLE                
 
-  instance GlEnum FogPointerTypeIBM where
+  implementation GlEnum FogPointerTypeIBM where
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_DOUBLE                 = 0x140A
 
@@ -354,7 +354,7 @@ namespace FrontFaceDirection
     GL_CCW                    | 
     GL_CW                    
 
-  instance GlEnum FrontFaceDirection where
+  implementation GlEnum FrontFaceDirection where
     toGlInt GL_CCW                    = 0x0901
     toGlInt GL_CW                     = 0x0900
 
@@ -435,7 +435,7 @@ namespace GetPName
     GL_UNPACK_SWAP_BYTES      | 
     GL_VIEWPORT              
 
-  instance GlEnum GetPName where
+  implementation GlEnum GetPName where
     toGlInt GL_ALIASED_LINE_WIDTH_RANGE = 0x846E
     toGlInt GL_BLEND                  = 0x0BE2
     toGlInt GL_BLEND_DST              = 0x0BE0
@@ -526,7 +526,7 @@ namespace GetTextureParameter
     GL_TEXTURE_WRAP_S         | 
     GL_TEXTURE_WRAP_T        
 
-  instance GlEnum GetTextureParameter where
+  implementation GlEnum GetTextureParameter where
     toGlInt GL_TEXTURE_ALPHA_SIZE     = 0x805F
     toGlInt GL_TEXTURE_BLUE_SIZE      = 0x805E
     toGlInt GL_TEXTURE_BORDER_COLOR   = 0x1004
@@ -546,7 +546,7 @@ namespace HintMode
     GL_FASTEST                | 
     GL_NICEST                
 
-  instance GlEnum HintMode where
+  implementation GlEnum HintMode where
     toGlInt GL_DONT_CARE              = 0x1100
     toGlInt GL_FASTEST                = 0x1101
     toGlInt GL_NICEST                 = 0x1102
@@ -559,7 +559,7 @@ namespace HintTarget
     GL_PROGRAM_BINARY_RETRIEVABLE_HINT | 
     GL_TEXTURE_COMPRESSION_HINT
 
-  instance GlEnum HintTarget where
+  implementation GlEnum HintTarget where
     toGlInt GL_FRAGMENT_SHADER_DERIVATIVE_HINT = 0x8B8B
     toGlInt GL_LINE_SMOOTH_HINT       = 0x0C52
     toGlInt GL_POLYGON_SMOOTH_HINT    = 0x0C53
@@ -573,7 +573,7 @@ namespace IndexPointerType
     GL_INT                    | 
     GL_SHORT                 
 
-  instance GlEnum IndexPointerType where
+  implementation GlEnum IndexPointerType where
     toGlInt GL_DOUBLE                 = 0x140A
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_INT                    = 0x1404
@@ -583,7 +583,7 @@ namespace LightEnvModeSGIX
   data LightEnvModeSGIX = 
     GL_REPLACE               
 
-  instance GlEnum LightEnvModeSGIX where
+  implementation GlEnum LightEnvModeSGIX where
     toGlInt GL_REPLACE                = 0x1E01
 
 namespace ListNameType 
@@ -596,7 +596,7 @@ namespace ListNameType
     GL_UNSIGNED_INT           | 
     GL_UNSIGNED_SHORT        
 
-  instance GlEnum ListNameType where
+  implementation GlEnum ListNameType where
     toGlInt GL_BYTE                   = 0x1400
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_INT                    = 0x1404
@@ -624,7 +624,7 @@ namespace LogicOp
     GL_SET                    | 
     GL_XOR                   
 
-  instance GlEnum LogicOp where
+  implementation GlEnum LogicOp where
     toGlInt GL_AND                    = 0x1501
     toGlInt GL_AND_INVERTED           = 0x1504
     toGlInt GL_AND_REVERSE            = 0x1502
@@ -651,7 +651,7 @@ namespace MapBufferUsageMask
     GL_MAP_UNSYNCHRONIZED_BIT | 
     GL_MAP_WRITE_BIT         
 
-  instance GlEnum MapBufferUsageMask where
+  implementation GlEnum MapBufferUsageMask where
     toGlInt GL_MAP_FLUSH_EXPLICIT_BIT = 0x0010
     toGlInt GL_MAP_INVALIDATE_BUFFER_BIT = 0x0008
     toGlInt GL_MAP_INVALIDATE_RANGE_BIT = 0x0004
@@ -665,7 +665,7 @@ namespace MaterialFace
     GL_FRONT                  | 
     GL_FRONT_AND_BACK        
 
-  instance GlEnum MaterialFace where
+  implementation GlEnum MaterialFace where
     toGlInt GL_BACK                   = 0x0405
     toGlInt GL_FRONT                  = 0x0404
     toGlInt GL_FRONT_AND_BACK         = 0x0408
@@ -674,7 +674,7 @@ namespace MatrixMode
   data MatrixMode = 
     GL_TEXTURE               
 
-  instance GlEnum MatrixMode where
+  implementation GlEnum MatrixMode where
     toGlInt GL_TEXTURE                = 0x1702
 
 namespace MeshMode1 
@@ -682,7 +682,7 @@ namespace MeshMode1
     GL_LINE                   | 
     GL_POINT                 
 
-  instance GlEnum MeshMode1 where
+  implementation GlEnum MeshMode1 where
     toGlInt GL_LINE                   = 0x1B01
     toGlInt GL_POINT                  = 0x1B00
 
@@ -692,7 +692,7 @@ namespace MeshMode2
     GL_LINE                   | 
     GL_POINT                 
 
-  instance GlEnum MeshMode2 where
+  implementation GlEnum MeshMode2 where
     toGlInt GL_FILL                   = 0x1B02
     toGlInt GL_LINE                   = 0x1B01
     toGlInt GL_POINT                  = 0x1B00
@@ -705,7 +705,7 @@ namespace NormalPointerType
     GL_INT                    | 
     GL_SHORT                 
 
-  instance GlEnum NormalPointerType where
+  implementation GlEnum NormalPointerType where
     toGlInt GL_BYTE                   = 0x1400
     toGlInt GL_DOUBLE                 = 0x140A
     toGlInt GL_FLOAT                  = 0x1406
@@ -718,7 +718,7 @@ namespace PixelCopyType
     GL_DEPTH                  | 
     GL_STENCIL               
 
-  instance GlEnum PixelCopyType where
+  implementation GlEnum PixelCopyType where
     toGlInt GL_COLOR                  = 0x1800
     toGlInt GL_DEPTH                  = 0x1801
     toGlInt GL_STENCIL                = 0x1802
@@ -736,7 +736,7 @@ namespace PixelFormat
     GL_UNSIGNED_INT           | 
     GL_UNSIGNED_SHORT        
 
-  instance GlEnum PixelFormat where
+  implementation GlEnum PixelFormat where
     toGlInt GL_ALPHA                  = 0x1906
     toGlInt GL_BLUE                   = 0x1905
     toGlInt GL_DEPTH_COMPONENT        = 0x1902
@@ -765,7 +765,7 @@ namespace InternalFormat
     GL_RGBA4                  | 
     GL_RGBA8                 
 
-  instance GlEnum InternalFormat where
+  implementation GlEnum InternalFormat where
     toGlInt GL_R3_G3_B2               = 0x2A10
     toGlInt GL_RGB10                  = 0x8052
     toGlInt GL_RGB10_A2               = 0x8059
@@ -800,7 +800,7 @@ namespace PixelStoreParameter
     GL_UNPACK_SKIP_ROWS       | 
     GL_UNPACK_SWAP_BYTES     
 
-  instance GlEnum PixelStoreParameter where
+  implementation GlEnum PixelStoreParameter where
     toGlInt GL_PACK_ALIGNMENT         = 0x0D05
     toGlInt GL_PACK_IMAGE_HEIGHT      = 0x806C
     toGlInt GL_PACK_LSB_FIRST         = 0x0D01
@@ -824,7 +824,7 @@ namespace PixelTexGenMode
     GL_RGB                    | 
     GL_RGBA                  
 
-  instance GlEnum PixelTexGenMode where
+  implementation GlEnum PixelTexGenMode where
     toGlInt GL_NONE                   = 0
     toGlInt GL_RGB                    = 0x1907
     toGlInt GL_RGBA                   = 0x1908
@@ -844,7 +844,7 @@ namespace PixelType
     GL_UNSIGNED_SHORT_4_4_4_4 | 
     GL_UNSIGNED_SHORT_5_5_5_1
 
-  instance GlEnum PixelType where
+  implementation GlEnum PixelType where
     toGlInt GL_BYTE                   = 0x1400
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_INT                    = 0x1404
@@ -862,7 +862,7 @@ namespace PointParameterNameSGIS
   data PointParameterNameSGIS = 
     GL_POINT_FADE_THRESHOLD_SIZE
 
-  instance GlEnum PointParameterNameSGIS where
+  implementation GlEnum PointParameterNameSGIS where
     toGlInt GL_POINT_FADE_THRESHOLD_SIZE = 0x8128
 
 namespace PolygonMode 
@@ -871,7 +871,7 @@ namespace PolygonMode
     GL_LINE                   | 
     GL_POINT                 
 
-  instance GlEnum PolygonMode where
+  implementation GlEnum PolygonMode where
     toGlInt GL_FILL                   = 0x1B02
     toGlInt GL_LINE                   = 0x1B01
     toGlInt GL_POINT                  = 0x1B00
@@ -892,7 +892,7 @@ namespace PrimitiveType
     GL_TRIANGLE_STRIP         | 
     GL_TRIANGLE_STRIP_ADJACENCY
 
-  instance GlEnum PrimitiveType where
+  implementation GlEnum PrimitiveType where
     toGlInt GL_LINES                  = 0x0001
     toGlInt GL_LINES_ADJACENCY        = 0x000A
     toGlInt GL_LINE_LOOP              = 0x0002
@@ -918,7 +918,7 @@ namespace ReadBufferMode
     GL_LEFT                   | 
     GL_RIGHT                 
 
-  instance GlEnum ReadBufferMode where
+  implementation GlEnum ReadBufferMode where
     toGlInt GL_BACK                   = 0x0405
     toGlInt GL_BACK_LEFT              = 0x0402
     toGlInt GL_BACK_RIGHT             = 0x0403
@@ -934,7 +934,7 @@ namespace StencilFaceDirection
     GL_BACK                   | 
     GL_FRONT_AND_BACK        
 
-  instance GlEnum StencilFaceDirection where
+  implementation GlEnum StencilFaceDirection where
     toGlInt GL_FRONT                  = 0x0404
     toGlInt GL_BACK                   = 0x0405
     toGlInt GL_FRONT_AND_BACK         = 0x0408
@@ -950,7 +950,7 @@ namespace StencilFunction
     GL_NEVER                  | 
     GL_NOTEQUAL              
 
-  instance GlEnum StencilFunction where
+  implementation GlEnum StencilFunction where
     toGlInt GL_ALWAYS                 = 0x0207
     toGlInt GL_EQUAL                  = 0x0202
     toGlInt GL_GEQUAL                 = 0x0206
@@ -969,7 +969,7 @@ namespace StencilOp
     GL_REPLACE                | 
     GL_ZERO                  
 
-  instance GlEnum StencilOp where
+  implementation GlEnum StencilOp where
     toGlInt GL_DECR                   = 0x1E03
     toGlInt GL_INCR                   = 0x1E02
     toGlInt GL_INVERT                 = 0x150A
@@ -985,7 +985,7 @@ namespace StringName
     GL_VERSION                | 
     GL_SHADING_LANGUAGE_VERSION
 
-  instance GlEnum StringName where
+  implementation GlEnum StringName where
     toGlInt GL_EXTENSIONS             = 0x1F03
     toGlInt GL_RENDERER               = 0x1F01
     toGlInt GL_VENDOR                 = 0x1F00
@@ -999,7 +999,7 @@ namespace TexCoordPointerType
     GL_INT                    | 
     GL_SHORT                 
 
-  instance GlEnum TexCoordPointerType where
+  implementation GlEnum TexCoordPointerType where
     toGlInt GL_DOUBLE                 = 0x140A
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_INT                    = 0x1404
@@ -1009,7 +1009,7 @@ namespace TextureEnvMode
   data TextureEnvMode = 
     GL_BLEND                 
 
-  instance GlEnum TextureEnvMode where
+  implementation GlEnum TextureEnvMode where
     toGlInt GL_BLEND                  = 0x0BE2
 
 namespace TextureMagFilter 
@@ -1017,7 +1017,7 @@ namespace TextureMagFilter
     GL_LINEAR                 | 
     GL_NEAREST               
 
-  instance GlEnum TextureMagFilter where
+  implementation GlEnum TextureMagFilter where
     toGlInt GL_LINEAR                 = 0x2601
     toGlInt GL_NEAREST                = 0x2600
 
@@ -1030,7 +1030,7 @@ namespace TextureMinFilter
     GL_NEAREST_MIPMAP_LINEAR  | 
     GL_NEAREST_MIPMAP_NEAREST
 
-  instance GlEnum TextureMinFilter where
+  implementation GlEnum TextureMinFilter where
     toGlInt GL_LINEAR                 = 0x2601
     toGlInt GL_LINEAR_MIPMAP_LINEAR   = 0x2703
     toGlInt GL_LINEAR_MIPMAP_NEAREST  = 0x2701
@@ -1047,7 +1047,7 @@ namespace TextureParameterName
     GL_TEXTURE_WRAP_S         | 
     GL_TEXTURE_WRAP_T        
 
-  instance GlEnum TextureParameterName where
+  implementation GlEnum TextureParameterName where
     toGlInt GL_TEXTURE_BORDER_COLOR   = 0x1004
     toGlInt GL_TEXTURE_MAG_FILTER     = 0x2800
     toGlInt GL_TEXTURE_MIN_FILTER     = 0x2801
@@ -1069,7 +1069,7 @@ namespace TextureTarget
     GL_TEXTURE_MIN_LOD        | 
     GL_TEXTURE_CUBE_MAP      
 
-  instance GlEnum TextureTarget where
+  implementation GlEnum TextureTarget where
     toGlInt GL_PROXY_TEXTURE_1D       = 0x8063
     toGlInt GL_PROXY_TEXTURE_2D       = 0x8064
     toGlInt GL_PROXY_TEXTURE_3D       = 0x8070
@@ -1088,7 +1088,7 @@ namespace TextureWrapMode
     GL_CLAMP_TO_EDGE          | 
     GL_REPEAT                
 
-  instance GlEnum TextureWrapMode where
+  implementation GlEnum TextureWrapMode where
     toGlInt GL_CLAMP_TO_BORDER        = 0x812D
     toGlInt GL_CLAMP_TO_EDGE          = 0x812F
     toGlInt GL_REPEAT                 = 0x2901
@@ -1102,7 +1102,7 @@ namespace UseProgramStageMask
     GL_TESS_EVALUATION_SHADER_BIT | 
     GL_ALL_SHADER_BITS       
 
-  instance GlEnum UseProgramStageMask where
+  implementation GlEnum UseProgramStageMask where
     toGlInt GL_VERTEX_SHADER_BIT      = 0x00000001
     toGlInt GL_FRAGMENT_SHADER_BIT    = 0x00000002
     toGlInt GL_GEOMETRY_SHADER_BIT    = 0x00000004
@@ -1117,13 +1117,14 @@ namespace VertexPointerType
     GL_INT                    | 
     GL_SHORT                 
 
-  instance GlEnum VertexPointerType where
+  implementation GlEnum VertexPointerType where
     toGlInt GL_DOUBLE                 = 0x140A
     toGlInt GL_FLOAT                  = 0x1406
     toGlInt GL_INT                    = 0x1404
     toGlInt GL_SHORT                  = 0x1402
 
 namespace BufferTargetARB 
+  public export
   data BufferTargetARB = 
     GL_ARRAY_BUFFER           | 
     GL_COPY_READ_BUFFER       | 
@@ -1136,7 +1137,8 @@ namespace BufferTargetARB
     GL_TRANSFORM_FEEDBACK_BUFFER | 
     GL_UNIFORM_BUFFER        
 
-  instance GlEnum BufferTargetARB where
+  public export
+  implementation GlEnum BufferTargetARB where
     toGlInt GL_ARRAY_BUFFER           = 0x8892
     toGlInt GL_COPY_READ_BUFFER       = 0x8F36
     toGlInt GL_COPY_WRITE_BUFFER      = 0x8F37
@@ -1149,6 +1151,7 @@ namespace BufferTargetARB
     toGlInt GL_UNIFORM_BUFFER         = 0x8A11
 
 namespace BufferUsageARB 
+  public export
   data BufferUsageARB = 
     GL_STREAM_DRAW            | 
     GL_STREAM_READ            | 
@@ -1160,7 +1163,7 @@ namespace BufferUsageARB
     GL_DYNAMIC_READ           | 
     GL_DYNAMIC_COPY          
 
-  instance GlEnum BufferUsageARB where
+  implementation GlEnum BufferUsageARB where
     toGlInt GL_STREAM_DRAW            = 0x88E0
     toGlInt GL_STREAM_READ            = 0x88E1
     toGlInt GL_STREAM_COPY            = 0x88E2
@@ -1177,7 +1180,7 @@ namespace BufferAccessARB
     GL_WRITE_ONLY             | 
     GL_READ_WRITE            
 
-  instance GlEnum BufferAccessARB where
+  implementation GlEnum BufferAccessARB where
     toGlInt GL_READ_ONLY              = 0x88B8
     toGlInt GL_WRITE_ONLY             = 0x88B9
     toGlInt GL_READ_WRITE             = 0x88BA

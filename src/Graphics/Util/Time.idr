@@ -8,20 +8,21 @@ record Time where
   seconds : Int
   microseconds : Int
 
-instance Show Time where
+implementation Show Time where
   show (MicroTime seconds useconds) = (show seconds) ++ "." ++ (show useconds)
 
 ||| get the current time as a pair of seconds and microseconds since epoch
 currentTimeMicros : IO Time
 currentTimeMicros 
-    = do MkRaw e <- 
-               foreign FFI_C "idr_currentTimeMicros" (Ptr -> IO (Raw (Time))) prim__vm
-         return e
+    = do me <- getMyVM
+         MkRaw e <- 
+               foreign FFI_C "idr_currentTimeMicros" (Ptr -> IO (Raw Time)) me
+         pure e
 
-instance Eq Time where 
+implementation Eq Time where 
   (MicroTime s1 us1) == (MicroTime s2 us2) = s1 == s2 && us1 == us2
 
-instance Ord Time where 
+implementation Ord Time where 
   compare (MicroTime s1 us1) (MicroTime s2 us2) = if (s1 < s2) then LT
                                                   else if (s1 > s2) then GT
                                                        else compare us1 us2

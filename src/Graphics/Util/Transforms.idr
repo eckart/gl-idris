@@ -2,12 +2,12 @@ module Graphics.Util.Transforms
 
 import Data.So
 import Data.Matrix
-import Data.Floats
+import Data.Matrix.Algebraic
 import Data.Vect
 import Control.Algebra
 import Debug.Trace
 
-%access public
+%access public export
 
 -- ----------------------------------------------------------------- [ Types ]
 
@@ -18,6 +18,9 @@ Pos = Vect 3 Double
 
 TransformationMatrix : Type
 TransformationMatrix = Matrix 4 4 Double
+
+vmult : Matrix n m Double -> Vect m Double -> Vect n Double
+vmult m v = map (<:> v) m
 
 -- ----------------------------------------------------------------- [ Utilities ]
 data Interval : Type where
@@ -42,7 +45,7 @@ clamp val (MkInterval lower upper _) =
 
 -- ----------------------------------------------------------------- [ Angles ]
 
-private
+export
 getRadians : Angle -> Double
 getRadians (Radians a) = a
 getRadians (Degree a)  = a * pi / 180
@@ -220,10 +223,10 @@ namespace Quaternions
                   in norm q
 
 
-  instance Show Quaternion where
+  implementation Show Quaternion where
     show (Q s (v1 :: v2 :: v3 :: [])) = (show s)++" + " ++ (show v1) ++"i + "++ (show v2) ++ "k + "++ (show v3)++"j"
 
-  instance Eq Quaternion where
+  implementation Eq Quaternion where
     (==) q p = realPart q == realPart p && imagPart q == imagPart p
 
   ||| returns the quaternion as a 4 dimensional Vector with the scalar part last
@@ -234,6 +237,7 @@ namespace Quaternions
   fromVect : Vect 4 Double -> Quaternion
   fromVect (x :: y :: z :: w :: Nil) = Q w [x, y, z]
 
+  export
   fromAxis : (rotation: Angle) -> (axis: Vect 3 Double) -> Quaternion
   fromAxis rot (bx :: by :: bz :: Nil) = 
     let a = (getRadians rot) / 2
@@ -318,6 +322,7 @@ namespace Quaternions
   -- see https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 
   ||| the roll = rotation around x-axis
+  export
   roll : Quaternion -> Angle 
   roll q = let q' = qnormalize q
                (Q w (x :: y :: z :: Nil)) = q' 
@@ -326,6 +331,7 @@ namespace Quaternions
                    p@(_)     => Radians $ (2 * (atan2 y w)) * (gimbalMultiplier p)
 
   ||| rotation around y-axis  
+  export
   pitch : Quaternion -> Angle 
   pitch q = let q' = qnormalize q
                 (Q w (x :: y :: z :: Nil)) = q' 
@@ -334,6 +340,7 @@ namespace Quaternions
                     _      => Radians $ (pi / 2)
 
   ||| rotation around z-axis  
+  export
   yaw : Quaternion -> Angle
   yaw q = let q' = qnormalize q
               (Q w (x :: y :: z :: Nil)) = q' 
@@ -342,6 +349,7 @@ namespace Quaternions
                     _      => Radians $ 0
 
   ||| creates a quaternion from a vector of euler angles 
+  export
   fromEulerAngles : Vect 3 Angle -> Quaternion
   fromEulerAngles (yaw :: pitch :: roll :: Nil) = 
     let yawR = (getRadians yaw) / 2; pitchR = (getRadians pitch) / 2; rollR = (getRadians roll) / 2
@@ -351,9 +359,11 @@ namespace Quaternions
         z    = (cos yawR) * (cos pitchR) * (sin rollR) - (sin yawR) * (sin pitchR) * (cos rollR)
     in (Q w [x,y,z])    
 
+  export
   toEulerAngles : Quaternion -> Vect 3 Angle
   toEulerAngles q = [roll q, pitch q, yaw q]
 
+  export
   fromCross : Vect 3 Double -> Vect 3 Double-> Quaternion
   fromCross v1 v2 = let theta = acos (dot (normalize v1) (normalize v2))
                         vec   = cross (normalize v1) (normalize v2)
@@ -370,31 +380,30 @@ namespace Quaternions
 
   -- ----------------------------------------------------------------- [ Algenbraic Classes for Quaternions ]
 
-  instance Semigroup Quaternion where
+  implementation Semigroup Quaternion where
     (<+>) = qsum
 
-  instance Monoid Quaternion where
+  implementation Monoid Quaternion where
     neutral = Q 0 [0, 0, 0]
 
-  instance Group Quaternion where
+  implementation Group Quaternion where
     inverse (Q s v) = Q (-1*s) (scalar (-1) v)
 
-  instance AbelianGroup Quaternion where {}
+  implementation AbelianGroup Quaternion where {}
 
-  instance Ring Quaternion where
+  implementation Ring Quaternion where
     (<.>) = qmultiply
 
-  instance RingWithUnity Quaternion where
+  implementation RingWithUnity Quaternion where
     unity = Q 1 [0,0,0]
 
-  instance Num Quaternion where
+  implementation Num Quaternion where
     (+) = qsum
-    (-) = (<->)
     (*) = qmultiply
     fromInteger x = Q (fromInteger x) [0,0,0]
-    abs q = Q (qnorm q) [0,0,0]
+
   
-  instance Field Quaternion where 
+  implementation Field Quaternion where 
     inverseM q _ = qinverse q
 
   -- ----------------------------------------------------------------- [ Quaternion Rotation ]
@@ -427,3 +436,34 @@ namespace Quaternions
 	}                  
 --}                     
 
+{--
+#define SLERP_TO_LERP_SWITCH_THRESHOLD 0.01f
+
+Quaternion Quaternion_slerp(Quaternion left, Quaternion right, float value) {
+	float leftWeight, rightWeight, difference;
+	Quaternion result;
+	
+	difference = left.x * right.x + left.y * right.y + left.z * right.z + left.w * right.w;
+	if (1.0f - fabs(difference) > SLERP_TO_LERP_SWITCH_THRESHOLD) {
+		float theta, oneOverSinTheta;
+		
+		theta = acos(fabs(difference));
+		oneOverSinTheta = 1.0f / sin(theta);
+		leftWeight = sin(theta * (1.0f - value)) * oneOverSinTheta;
+		rightWeight = sin(theta * value) * oneOverSinTheta;
+		if (difference < 0.0f) {
+			leftWeight = -leftWeight;
+		}
+	} else {
+		leftWeight = 1.0f - value;
+		rightWeight = value;
+	}
+	result.x = left.x * leftWeight + right.x * rightWeight;
+	result.y = left.y * leftWeight + right.y * rightWeight;
+	result.z = left.z * leftWeight + right.z * rightWeight;
+	result.w = left.w * leftWeight + right.w * rightWeight;
+	Quaternion_normalize(&result);
+	
+	return result;
+}
+--}
