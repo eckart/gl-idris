@@ -92,7 +92,7 @@ int idr_init_glew() {
 void idr_glUniformMatrix4fv(int location, void* buffer) {
   GLuint loc = (GLuint) location;
   double* buff = (double*) buffer;
-  
+
   float* mat = malloc(16*sizeof(float));
   for (int i = 0; i < 16; i++) {
     mat[i] = buff[i];
@@ -410,7 +410,7 @@ int png_texture(GLenum target, GLint level, const char * file_name) {
     fclose(fp);
     return 1;
 }
-		
+
 void printShaderLog(int shaderId) {
   GLuint id = (GLuint) shaderId;
     GLint result;
@@ -438,26 +438,26 @@ void printShaderLog(int shaderId) {
 
 
 // returns the seconds + microseconds since epoch as an idris value
-void* idr_currentTimeMicros(VM* vm) 
+void* idr_currentTimeMicros(VM* vm)
 {
   VAL idris_time;
 
   struct timeval start;
 
-  int seconds, useconds;    
+  int seconds, useconds;
 
   gettimeofday(&start, NULL);
 
   seconds  = start.tv_sec;
   useconds = start.tv_usec;
 
-  idris_requireAlloc(128); // Conservative!
+  idris_requireAlloc(vm, 128); // Conservative!
 
   idris_constructor(idris_time, vm, 0, 2, 0);
   idris_setConArg(idris_time, 0, MKINT((intptr_t) seconds));
   idris_setConArg(idris_time, 1, MKINT((intptr_t) useconds));
   idris_doneAlloc(vm);
 
-  
+
   return idris_time;
 }
