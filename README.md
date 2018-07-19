@@ -30,22 +30,19 @@ Requirements
 Installation
 ------------
 
-Please follow the individual installation instructions for each of the required components.
+1. Please follow the individual installation instructions for each of the required components.
 
-If you are on a mac you can get away with `brew install` for GLEW, pkg-config and libpng.
-OpenGL is already installed.
+  If you are on a mac you can get away with `brew install` for GLEW, pkg-config and libpng. OpenGL is already installed.
 
-This project contains a small C file for easier integration.
-The Makefile for the FFI is platform dependent and will currently work only on MacOS:
+  On Fedora: `sudo dnf install glfw-devel glew-devel SDL2-devel SDL2_image-devel glm-devel freetype-devel`
 
-Specifically it says in `src/MakefileGl'
-```make
-echo "%flag C \"-framework OpenGL\"" >> Graphics/Rendering/Config.idr
+2. clone
 
-```
+3. **Check `src/MakefileGl`** depending on your platform (Linux/Mac) you may have to un/comment a line.
 
-You might need to change `-framework OpenGL` to whatever is needed for the C flags on your system.
+4. `make` / `make install`
 
+Now enter the `example/hello-world` directory, run make there, and `./test` should display a triangle.
 
 How to use it
 -------------
@@ -74,7 +71,3 @@ I'm still not clear whether this was a good idea or not.
 However I have no plans to change any of that stuff any time soon.
 
 Is it safe to use it? I don't know..
-
-
-
-

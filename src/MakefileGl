@@ -9,7 +9,13 @@ config: .PHONY
 	echo "%flag C \"`pkg-config --libs glew libpng`\"" >> Graphics/Rendering/Config.idr
 	#echo "%flag C \"`pkg-config --libs --cflags libpng`\"" >> Graphics/Rendering/Config.idr
 	#echo "%flag C \"-framework OpenGL\"" >> Graphics/Rendering/Config.idr
+
+	# MAC:
+
 	#echo "%flag C \"OpenGL -framework\"" >> Graphics/Rendering/Config.idr
+
+	# LINUX:
+
 	echo "%flag C \"-lGL\"" >> Graphics/Rendering/Config.idr
 clean: .PHONY
 	rm gl_idris.o
