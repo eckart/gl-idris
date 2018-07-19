@@ -6,7 +6,7 @@ import public Graphics.Rendering.Gl.Types
 import public Graphics.Rendering.Gl.Gl41
 import public Graphics.Rendering.Gl
 
-%access public 
+%access public export
 
 data GlState : Type where
   GlOn : GlState
@@ -46,6 +46,3 @@ clear' (RGBA r g b a) masks = do glClearColor r g b a
 
 clear : Color -> List ClearBufferMask -> { [GL_ON] } Eff ()
 clear color masks = call $ WithGl (\_ => clear' color masks)
-
-
-
